@@ -41,9 +41,7 @@ class TestFullPipeline:
         mock_cuda.is_available.return_value = True
         mock_cuda.device_count.return_value = 1
         mock_cuda.get_device_name.return_value = "NVIDIA GeForce RTX 3060"
-        mock_cuda.get_device_properties.return_value = MagicMock(
-            total_memory=12 * 1024**3, major=8, minor=6
-        )
+        mock_cuda.get_device_capability.return_value = (8, 6)  # Compute capability 8.6
         mock_cuda.mem_get_info.return_value = (10 * 1024**3, 12 * 1024**3)
 
         mock_pynvml.nvmlInit.return_value = None
@@ -53,6 +51,12 @@ class TestFullPipeline:
         mock_pynvml.nvmlDeviceGetName.return_value = b"NVIDIA GeForce RTX 3060"
         mock_pynvml.nvmlSystemGetCudaDriverVersion.return_value = 12010
         mock_pynvml.nvmlSystemGetDriverVersion.return_value = b"525.60.11"
+
+        # Mock memory info with proper structure
+        mock_memory_info = MagicMock()
+        mock_memory_info.total = 12 * 1024 * 1024 * 1024  # 12GB in bytes
+        mock_memory_info.free = 10 * 1024 * 1024 * 1024  # 10GB in bytes
+        mock_pynvml.nvmlDeviceGetMemoryInfo.return_value = mock_memory_info
 
         # Step 1: Detect GPU
         detect_result = self.runner.invoke(cli, ["detect"])
