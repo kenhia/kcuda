@@ -198,18 +198,18 @@ class ModelLoader:
         Raises:
             ValueError: If quantization type cannot be determined
         """
-        # Common GGUF quantization patterns
+        # Common GGUF quantization patterns (match with word boundaries, not just dots)
         patterns = [
-            r"\.Q([2-8])_([KM])_([SML])\.",  # Q4_K_M, Q5_K_S, etc.
-            r"\.Q([2-8])_([01])\.",  # Q4_0, Q4_1, Q8_0
-            r"\.F(16|32)\.",  # F16, F32
+            r"[.-]Q([2-8])_([KM])_([SML])[.-]",  # Q4_K_M, Q5_K_S, etc.
+            r"[.-]Q([2-8])_([01])[.-]",  # Q4_0, Q4_1, Q8_0
+            r"[.-]F(16|32)[.-]",  # F16, F32
         ]
 
         for pattern in patterns:
             match = re.search(pattern, filename, re.IGNORECASE)
             if match:
-                # Extract and normalize
-                quant = match.group(0).strip(".")
+                # Extract and normalize, removing leading/trailing separators
+                quant = match.group(0).strip(".-")
                 return quant.upper()
 
         raise ValueError(f"Cannot determine quantization type from filename: {filename}")
