@@ -134,8 +134,8 @@ def load(
             )
             progress.update(task, completed=True)
 
-        # Display model information
-        console.print(format_model_info(model))
+        # Display model information (already formatted with ANSI codes)
+        print(format_model_info(model))
         console.print("\n[green]✓ Model loaded successfully - PASSED![/green]")
 
         logger.info(f"Model loaded: {model.repo_id}/{model.filename}")

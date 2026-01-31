@@ -184,7 +184,7 @@ def format_model_info(model: LLMModel) -> str:
         Formatted model info string
     """
     buffer = StringIO()
-    temp_console = Console(file=buffer, force_terminal=True)
+    temp_console = Console(file=buffer, force_terminal=True, legacy_windows=False)
 
     temp_console.print("\n[bold cyan]Model Information:[/bold cyan]")
     temp_console.print(f"  Repository: [bold]{model.repo_id}[/bold]")
