@@ -56,7 +56,7 @@ logs/
 
 # Model cache (Hugging Face)
 .cache/
-models/
+/models/
 *.gguf
 
 # Distribution / packaging

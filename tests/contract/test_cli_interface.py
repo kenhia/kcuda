@@ -152,6 +152,108 @@ class TestDetectCommandContract:
         assert has_recommendation, "Error message should include recommendations"
 
 
+class TestLoadCommandContract:
+    """Test load command matches CLI contract specification."""
+
+    def setup_method(self):
+        """Setup test runner."""
+        self.runner = CliRunner()
+
+    @patch("kcuda_validate.cli.load.ModelLoader")
+    def test_load_command_success_output_format(self, mock_loader_class):
+        """Test load command success output matches contract format."""
+        from kcuda_validate.models.llm_model import LLMModel
+
+        # Mock successful model loading
+        mock_loader = mock_loader_class.return_value
+        mock_loader.download_model.return_value = "/path/to/model.gguf"
+        mock_loader.load_model.return_value = LLMModel(
+            repo_id="Ttimofeyka/MistralRP-Noromaid-NSFW-Mistral-7B-GGUF",
+            filename="mistralrp-noromaid-nsfw-mistral-7b.Q4_K_M.gguf",
+            local_path="/path/to/model.gguf",
+            file_size_mb=4168,
+            parameter_count=7_240_000_000,
+            quantization_type="Q4_K_M",
+            context_length=8192,
+            vram_usage_mb=4832,
+            is_loaded=True,
+        )
+
+        result = self.runner.invoke(cli, ["load"])
+
+        # Should succeed
+        assert result.exit_code == 0
+
+        # Verify output format per cli.md contract
+        output_lower = result.output.lower()
+        assert "model" in output_lower and "loaded" in output_lower
+        assert "passed" in output_lower
+        # Should show model metadata
+        assert "q4_k_m" in output_lower or "quantization" in output_lower
+        assert "vram" in output_lower
+
+    @patch("kcuda_validate.cli.load.ModelLoader")
+    def test_load_command_insufficient_vram_exit_code(self, mock_loader_class):
+        """Test load command exit code 2 for insufficient VRAM."""
+        from kcuda_validate.services.model_loader import ModelLoadError
+
+        mock_loader = mock_loader_class.return_value
+        mock_loader.download_model.return_value = "/path/to/model.gguf"
+        mock_loader.load_model.side_effect = ModelLoadError(
+            "Insufficient VRAM: need 5000MB, have 2000MB"
+        )
+
+        result = self.runner.invoke(cli, ["load"])
+
+        # Exit code 2 for load failures
+        assert result.exit_code == 2
+        assert "vram" in result.output.lower() or "memory" in result.output.lower()
+        assert "failed" in result.output.lower()
+
+    @patch("kcuda_validate.cli.load.ModelLoader")
+    def test_load_command_download_failure_exit_code(self, mock_loader_class):
+        """Test load command exit code 1 for download failures."""
+        from kcuda_validate.services.model_loader import ModelLoadError
+
+        mock_loader = mock_loader_class.return_value
+        mock_loader.download_model.side_effect = ModelLoadError("Network error")
+
+        result = self.runner.invoke(cli, ["load"])
+
+        # Exit code 1 for download failures
+        assert result.exit_code == 1
+        assert "download" in result.output.lower() or "network" in result.output.lower()
+        assert "failed" in result.output.lower()
+
+    def test_load_command_has_repo_id_option(self):
+        """Test load command has --repo-id option."""
+        result = self.runner.invoke(cli, ["load", "--help"])
+
+        assert result.exit_code == 0
+        assert "--repo-id" in result.output
+
+    def test_load_command_has_filename_option(self):
+        """Test load command has --filename option."""
+        result = self.runner.invoke(cli, ["load", "--help"])
+
+        assert result.exit_code == 0
+        assert "--filename" in result.output
+
+    def test_load_command_has_skip_download_option(self):
+        """Test load command has --skip-download option."""
+        result = self.runner.invoke(cli, ["load", "--help"])
+
+        assert result.exit_code == 0
+        assert "--skip-download" in result.output
+
+    def test_load_command_has_no_gpu_option(self):
+        """Test load command has --no-gpu option for CPU mode."""
+        result = self.runner.invoke(cli, ["load", "--help"])
+
+        assert result.exit_code == 0
+        assert "--no-gpu" in result.output
+
+
 class TestGlobalOptions:
     """Test global CLI options work across all commands."""
 

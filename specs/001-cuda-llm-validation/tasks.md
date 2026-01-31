@@ -96,10 +96,10 @@ Using single project structure:
 
 > **CRITICAL: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T024 [P] [US2] Unit test for LLMModel model validation in tests/unit/test_llm_model.py
-- [ ] T025 [P] [US2] Unit test for model_loader service (mock huggingface_hub, llama-cpp-python) in tests/unit/test_model_loader.py
-- [ ] T026 [P] [US2] Contract test for load command CLI interface in tests/contract/test_cli_interface.py (options, exit codes)
-- [ ] T027 [US2] Integration test for model download → load pipeline in tests/integration/test_model_lifecycle.py
+- [X] T024 [P] [US2] Unit test for LLMModel model validation in tests/unit/test_llm_model.py
+- [X] T025 [P] [US2] Unit test for model_loader service (mock huggingface_hub, llama-cpp-python) in tests/unit/test_model_loader.py
+- [X] T026 [P] [US2] Contract test for load command CLI interface in tests/contract/test_cli_interface.py (options, exit codes)
+- [X] T027 [US2] Integration test for model download → load pipeline in tests/integration/test_model_lifecycle.py
 
 ### Implementation for User Story 2
 
