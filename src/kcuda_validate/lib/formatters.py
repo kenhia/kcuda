@@ -14,6 +14,23 @@ from kcuda_validate.models.llm_model import LLMModel
 console = Console()
 
 
+def _get_log_file_message() -> str:
+    """Get log file path message if logging is enabled.
+
+    Returns:
+        Message about log file location, or empty string if no log file
+    """
+    try:
+        from kcuda_validate.lib.logger import get_log_file_path
+
+        log_path = get_log_file_path()
+        if log_path:
+            return f"\nFor detailed diagnostics, see: {log_path}"
+    except Exception:
+        pass
+    return ""
+
+
 def format_gpu_info(gpu: GPUDevice, warnings: list[str] | None = None) -> str:
     """Format GPU detection success output as string.
 
@@ -70,6 +87,10 @@ def format_gpu_error(error_message: str) -> str:
     temp_console.print("  1. NVIDIA GPU drivers are installed on Windows host (WSL2)")
     temp_console.print("  2. WSL2 GPU passthrough is enabled")
     temp_console.print("  3. nvidia-smi works in WSL2 terminal")
+
+    log_msg = _get_log_file_message()
+    if log_msg:
+        temp_console.print(log_msg, style="dim")
     temp_console.print()
     temp_console.print("Hardware validation: FAILED", style="bold red")
 
@@ -90,6 +111,10 @@ def format_model_error(error_message: str) -> str:
 
     temp_console.print("\n✗ Model loading failed", style="bold red")
     temp_console.print(f"Error: {error_message}", style="red")
+
+    log_msg = _get_log_file_message()
+    if log_msg:
+        temp_console.print(log_msg, style="dim")
     temp_console.print()
     temp_console.print("Model load: FAILED", style="bold red")
 
@@ -110,6 +135,10 @@ def format_inference_error(error_message: str) -> str:
 
     temp_console.print("\n✗ Inference failed", style="bold red")
     temp_console.print(f"Error: {error_message}", style="red")
+
+    log_msg = _get_log_file_message()
+    if log_msg:
+        temp_console.print(log_msg, style="dim")
     temp_console.print()
     temp_console.print("Inference test: FAILED", style="bold red")
 

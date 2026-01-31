@@ -15,6 +15,18 @@ DEFAULT_LOG_FILE = "kcuda-validate.log"
 MAX_BYTES = 10 * 1024 * 1024  # 10MB
 BACKUP_COUNT = 5
 
+# Global to track active log file path
+_active_log_file: Path | None = None
+
+
+def get_log_file_path() -> Path | None:
+    """Get the current log file path.
+
+    Returns:
+        Path to the active log file, or None if file logging is disabled
+    """
+    return _active_log_file
+
 
 def setup_logger(
     name: str = "kcuda_validate",
@@ -49,8 +61,11 @@ def setup_logger(
 
     # File handler (if enabled)
     if enable_file_logging:
+        global _active_log_file
         if log_file is None:
             log_file = DEFAULT_LOG_DIR / DEFAULT_LOG_FILE
+
+        _active_log_file = log_file
 
         # Create log directory
         log_file.parent.mkdir(parents=True, exist_ok=True)

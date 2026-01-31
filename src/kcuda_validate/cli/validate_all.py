@@ -42,7 +42,7 @@ DEFAULT_PROMPT = "Hello, how are you?"
     is_flag=True,
     help="Continue to next step even if previous failed",
 )
-def validate_all(repo_id: str, filename: str, prompt: str, skip_on_error: bool):
+def validate_all(repo_id: str, filename: str, prompt: str, skip_on_error: bool) -> None:
     """Run complete validation pipeline: detect → load → infer.
 
     Validates the full CUDA LLM stack by executing all validation steps

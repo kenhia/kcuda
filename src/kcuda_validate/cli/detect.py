@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
     default=0,
     help="GPU device index to query (default: 0)",
 )
-def detect(device_id: int):
+def detect(device_id: int) -> None:
     """Detect NVIDIA GPU hardware and validate CUDA compatibility.
 
     Checks for CUDA availability, detects GPU hardware, and validates

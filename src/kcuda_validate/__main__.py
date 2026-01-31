@@ -1,6 +1,9 @@
 """CLI entry point for kcuda-validate."""
 
+import atexit
+import contextlib
 import os
+import signal
 import sys
 from pathlib import Path
 
@@ -17,6 +20,29 @@ from kcuda_validate.lib.logger import setup_logger
 DEFAULT_LOG_DIR = Path(os.getenv("KCUDA_LOG_DIR", Path.home() / ".cache" / "kcuda" / "logs"))
 DEFAULT_LOG_FILE = DEFAULT_LOG_DIR / "kcuda-validate.log"
 DEFAULT_LOG_LEVEL = os.getenv("KCUDA_LOG_LEVEL", "INFO")
+
+# Track active model loader for cleanup
+_active_loader = None
+
+
+def _cleanup_on_exit():
+    """Clean up GPU resources on exit."""
+    global _active_loader
+    if _active_loader is not None:
+        with contextlib.suppress(Exception):
+            _active_loader.cleanup()
+
+
+def _signal_handler(signum, frame):
+    """Handle interrupt signals gracefully."""
+    _cleanup_on_exit()
+    sys.exit(130)  # Standard exit code for SIGINT
+
+
+# Register cleanup handlers
+atexit.register(_cleanup_on_exit)
+signal.signal(signal.SIGINT, _signal_handler)
+signal.signal(signal.SIGTERM, _signal_handler)
 
 
 @click.group(invoke_without_command=True)

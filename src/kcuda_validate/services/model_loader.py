@@ -30,6 +30,35 @@ class ModelLoader:
         """Initialize model loader."""
         self._loaded_model: Llama | None = None
 
+    def __enter__(self):
+        """Context manager entry."""
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Context manager exit - ensures cleanup."""
+        self.cleanup()
+        return False  # Don't suppress exceptions
+
+    def cleanup(self) -> None:
+        """Clean up GPU memory by unloading model.
+
+        This method ensures graceful cleanup of GPU resources.
+        Safe to call multiple times.
+        """
+        if self._loaded_model is not None:
+            try:
+                # Delete the model instance to free GPU memory
+                del self._loaded_model
+                self._loaded_model = None
+
+                # Force CUDA cache cleanup if torch is available
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+
+                logger.info("GPU memory cleaned up successfully")
+            except Exception as e:
+                logger.warning(f"Error during GPU cleanup: {e}")
+
     def download_model(self, repo_id: str, filename: str, repo_type: str = "model") -> str:
         """Download model from Hugging Face Hub.
 
@@ -88,6 +117,26 @@ class ModelLoader:
         if not path_obj.exists():
             raise ModelLoadError(f"File not found: {local_path}")
 
+        # Log file size
+        try:
+            file_size_gb = path_obj.stat().st_size / (1024**3)
+            logger.info(f"Model file size: {file_size_gb:.2f} GB")
+        except Exception as e:
+            logger.debug(f"Could not get file size: {e}")
+
+        # Log CUDA memory status before loading
+        if use_gpu and torch.cuda.is_available():
+            try:
+                mem_info = torch.cuda.mem_get_info()
+                free_mb = mem_info[0] // (1024 * 1024)
+                total_mb = mem_info[1] // (1024 * 1024)
+                used_mb = total_mb - free_mb
+                logger.info(
+                    f"GPU memory before load: {used_mb}/{total_mb} MB used ({free_mb} MB free)"
+                )
+            except Exception as e:
+                logger.debug(f"Could not get GPU memory info: {e}")
+
         # Get file size
         try:
             file_size_bytes = path_obj.stat().st_size
@@ -98,6 +147,7 @@ class ModelLoader:
         # Extract quantization type from filename
         try:
             quantization_type = self._extract_quantization(filename)
+            logger.info(f"Detected quantization: {quantization_type}")
         except ValueError as e:
             raise ModelLoadError(str(e)) from e
 
@@ -105,6 +155,7 @@ class ModelLoader:
         if use_gpu:
             # Estimate VRAM requirement (roughly 1.2x file size for Q4 quantization)
             estimated_vram_mb = int(file_size_mb * 1.2)
+            logger.info(f"Estimated VRAM required: {estimated_vram_mb} MB")
             try:
                 self.check_vram_availability(required_mb=estimated_vram_mb)
             except ModelLoadError:
@@ -120,6 +171,19 @@ class ModelLoader:
                 verbose=False,
             )
             logger.info("Model loaded successfully")
+
+            # Log GPU memory after loading
+            if use_gpu and torch.cuda.is_available():
+                try:
+                    mem_info = torch.cuda.mem_get_info()
+                    free_mb = mem_info[0] // (1024 * 1024)
+                    total_mb = mem_info[1] // (1024 * 1024)
+                    used_mb = total_mb - free_mb
+                    logger.info(
+                        f"GPU memory after load: {used_mb}/{total_mb} MB used ({free_mb} MB free)"
+                    )
+                except Exception as e:
+                    logger.debug(f"Could not get GPU memory info: {e}")
 
         except RuntimeError as e:
             error_msg = str(e)
