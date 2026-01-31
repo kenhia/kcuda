@@ -15,30 +15,102 @@ This tool validates that your WSL2 environment can:
 
 ## Installation
 
+### Prerequisites
+
+1. Install [uv](https://github.com/astral-sh/uv) if not already installed:
+   ```bash
+   curl -LsSf https://astral.sh/uv/install.sh | sh
+   ```
+
+2. Ensure NVIDIA drivers are installed on Windows host (for WSL2)
+
+### Install from Source
+
 ```bash
-# Create virtual environment
-uv venv
-source .venv/bin/activate
+# Clone repository
+git clone https://github.com/kenhia/kcuda.git
+cd kcuda
 
-# Install dependencies and project in editable mode
-uv add llama-cpp-python --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cu121
-uv add torch --index-url https://download.pytorch.org/whl/cu121
-uv add pynvml huggingface-hub click rich pytest ruff --dev
+# Install with uv (creates virtual environment automatically)
+uv sync
 
-# Install project in editable mode with dev dependencies
-uv install -e .
+# Run the tool
+uv run kcuda-validate --version
+```
+
+### Verify Installation
+
+```bash
+# Check all dependencies are installed
+uv run kcuda-validate --version
+
+# Run GPU detection to verify CUDA setup
+uv run kcuda-validate detect
 ```
 
 ## Usage
 
-```bash
-# Full validation pipeline
-kcuda-validate validate-all
+### Quick Validation
 
-# Individual commands
-kcuda-validate detect  # GPU detection only
-kcuda-validate load    # Download and load model
-kcuda-validate infer "Your prompt here"  # Run inference
+Run the complete validation pipeline in one command:
+
+```bash
+uv run kcuda-validate validate-all
+```
+
+This will:
+1. Detect your NVIDIA GPU and verify CUDA availability
+2. Download a test model (first run only, ~4GB)
+3. Load the model into GPU memory
+4. Run a simple inference test
+
+### Individual Commands
+
+```bash
+# Detect GPU hardware only
+uv run kcuda-validate detect
+
+# Load a specific model
+uv run kcuda-validate load \
+  --repo-id TheBloke/Mistral-7B-Instruct-v0.2-GGUF \
+  --filename mistral-7b-instruct-v0.2.Q4_K_M.gguf
+
+# Run inference with custom prompt
+uv run kcuda-validate infer "Explain quantum computing in simple terms"
+
+# Run inference with options
+uv run kcuda-validate infer \
+  --max-tokens 100 \
+  --temperature 0.8 \
+  "Tell me a story"
+```
+
+### Global Options
+
+```bash
+# Verbose output (DEBUG logging)
+uv run kcuda-validate -v detect
+
+# Quiet mode (ERROR only)
+uv run kcuda-validate -q validate-all
+
+# Custom log file
+uv run kcuda-validate --log-file /tmp/kcuda.log detect
+
+# Show version and dependencies
+uv run kcuda-validate --version
+```
+
+### Environment Variables
+
+```bash
+# Custom log directory
+export KCUDA_LOG_DIR=~/logs
+uv run kcuda-validate detect
+
+# Custom log level
+export KCUDA_LOG_LEVEL=DEBUG
+uv run kcuda-validate detect
 ```
 
 ## Requirements

@@ -22,38 +22,33 @@ You should see your GPU listed. If not, see [WSL2 GPU Setup Guide](https://docs.
 
 ## Installation
 
-### 1. Clone or Navigate to Repository
+### 1. Install uv (if not already installed)
 
 ```bash
-cd ~/src/kcuda
+curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-### 2. Create Virtual Environment with uv
+### 2. Clone Repository
 
 ```bash
-uv venv
-source .venv/bin/activate  # On Windows WSL2
+git clone https://github.com/kenhia/kcuda.git
+cd kcuda
 ```
 
-### 3. Install Dependencies
+### 3. Install with uv
 
 ```bash
-# Install with CUDA support (pre-built wheels)
-uv add llama-cpp-python \
-  --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cu121
-
-# Install remaining dependencies
-uv add torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
-uv add pynvml huggingface-hub click rich
+# Install project and all dependencies (creates venv automatically)
+uv sync
 ```
 
 ### 4. Verify Installation
 
 ```bash
-python -c "import torch; print(f'CUDA Available: {torch.cuda.is_available()}')"
+uv run kcuda-validate --version
 ```
 
-Expected output: `CUDA Available: True`
+Expected output showing version and dependencies.
 
 ## Quick Validation
 
@@ -62,7 +57,7 @@ Expected output: `CUDA Available: True`
 The fastest way to validate your setup:
 
 ```bash
-python -m kcuda_validate validate-all
+uv run kcuda-validate validate-all
 ```
 
 This will:
@@ -103,7 +98,7 @@ System ready for LLM development.
 ### GPU Detection Only
 
 ```bash
-python -m kcuda_validate detect
+uv run kcuda-validate detect
 ```
 
 Use this to verify CUDA availability without downloading models.
@@ -111,7 +106,7 @@ Use this to verify CUDA availability without downloading models.
 ### Load Specific Model
 
 ```bash
-python -m kcuda_validate load \
+uv run kcuda-validate load \
   --repo-id "Ttimofeyka/MistralRP-Noromaid-NSFW-Mistral-7B-GGUF" \
   --filename "mistralrp-noromaid-nsfw-mistral-7b.Q4_K_M.gguf"
 ```
@@ -119,13 +114,13 @@ python -m kcuda_validate load \
 ### Run Custom Inference
 
 ```bash
-python -m kcuda_validate infer "Write a short poem about code"
+uv run kcuda-validate infer "Write a short poem about code"
 ```
 
 Or with options:
 
 ```bash
-python -m kcuda_validate infer \
+uv run kcuda-validate infer \
   --max-tokens 100 \
   --temperature 0.8 \
   "Explain quantum computing simply"
@@ -145,7 +140,7 @@ python -m kcuda_validate infer \
 **Solution**: Try smaller quantization:
 
 ```bash
-python -m kcuda_validate load \
+uv run kcuda-validate load \
   --filename "mistralrp-noromaid-nsfw-mistral-7b.Q4_K_S.gguf"  # Smaller
 ```
 
