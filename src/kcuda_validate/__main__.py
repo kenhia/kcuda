@@ -8,6 +8,7 @@ import click
 
 from kcuda_validate import __version__
 from kcuda_validate.cli.detect import detect
+from kcuda_validate.cli.infer import infer
 from kcuda_validate.cli.load import load
 from kcuda_validate.lib.logger import setup_logger
 
@@ -94,6 +95,7 @@ def cli(
 
 # Register commands
 cli.add_command(detect)
+cli.add_command(infer)
 cli.add_command(load)
 
 

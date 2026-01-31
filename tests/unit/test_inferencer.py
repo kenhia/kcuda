@@ -37,7 +37,7 @@ class TestInferencer:
 
         # Create mock model
         mock_model = MagicMock()
-        mock_model.__call__.return_value = {
+        mock_model.return_value = {
             "choices": [{"text": " I'm doing well, thank you!"}]
         }
 
@@ -59,8 +59,8 @@ class TestInferencer:
         assert result.error_message is None
 
         # Verify model was called correctly
-        mock_model.__call__.assert_called_once()
-        call_kwargs = mock_model.__call__.call_args[1]
+        mock_model.assert_called_once()
+        call_kwargs = mock_model.call_args[1]
         assert call_kwargs["prompt"] == self.default_prompt
         assert call_kwargs["max_tokens"] == self.default_max_tokens
         assert call_kwargs["temperature"] == self.default_temperature
@@ -68,7 +68,7 @@ class TestInferencer:
     def test_generate_with_cuda_error(self):
         """Test generation failure due to CUDA error."""
         mock_model = MagicMock()
-        mock_model.__call__.side_effect = RuntimeError("CUDA out of memory")
+        mock_model.side_effect = RuntimeError("CUDA out of memory")
 
         inferencer = Inferencer(model=mock_model)
         result = inferencer.generate(prompt=self.default_prompt)
@@ -126,7 +126,7 @@ class TestInferencer:
 
         # Mock model
         mock_model = MagicMock()
-        mock_model.__call__.return_value = {"choices": [{"text": "Response"}]}
+        mock_model.return_value = {"choices": [{"text": "Response"}]}
 
         inferencer = Inferencer(model=mock_model, device_id=0, collect_metrics=True)
         result = inferencer.generate(prompt=self.default_prompt)
@@ -140,7 +140,7 @@ class TestInferencer:
     def test_generate_without_gpu_metrics(self):
         """Test generation without GPU metrics collection."""
         mock_model = MagicMock()
-        mock_model.__call__.return_value = {"choices": [{"text": "Response"}]}
+        mock_model.return_value = {"choices": [{"text": "Response"}]}
 
         inferencer = Inferencer(model=mock_model, collect_metrics=False)
         result = inferencer.generate(prompt=self.default_prompt)
@@ -152,7 +152,7 @@ class TestInferencer:
     def test_generate_handles_empty_response(self):
         """Test generation handles empty model response."""
         mock_model = MagicMock()
-        mock_model.__call__.return_value = {"choices": [{"text": ""}]}
+        mock_model.return_value = {"choices": [{"text": ""}]}
 
         inferencer = Inferencer(model=mock_model)
         result = inferencer.generate(prompt=self.default_prompt)
@@ -170,7 +170,7 @@ class TestInferencer:
             yield {"choices": [{"text": "!"}]}
 
         mock_model = MagicMock()
-        mock_model.__call__.return_value = mock_generator()
+        mock_model.return_value = mock_generator()
 
         inferencer = Inferencer(model=mock_model)
         result = inferencer.generate(prompt=self.default_prompt, stream=False)
@@ -201,14 +201,9 @@ class TestInferencer:
 class TestInferencerIntegrationWithLLMModel:
     """Test Inferencer integration with loaded LLM model."""
 
-    @patch("kcuda_validate.services.inferencer.Llama")
-    def test_create_from_llm_model(self, mock_llama_class):
+    def test_create_from_llm_model(self):
         """Test creating Inferencer from LLMModel."""
         from kcuda_validate.models.llm_model import LLMModel
-
-        # Create mock Llama instance
-        mock_llama = MagicMock()
-        mock_llama_class.return_value = mock_llama
 
         # Create LLMModel
         llm_model = LLMModel(

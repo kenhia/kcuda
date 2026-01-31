@@ -126,22 +126,22 @@ Using single project structure:
 
 > **CRITICAL: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T034 [P] [US3] Unit test for InferenceResult model validation in tests/unit/test_inference_result.py
-- [ ] T035 [P] [US3] Unit test for inferencer service (mock llama-cpp-python generation) in tests/unit/test_inferencer.py
-- [ ] T036 [P] [US3] Contract test for infer command CLI interface in tests/contract/test_cli_interface.py (prompt, options)
-- [ ] T037 [US3] Integration test for full inference pipeline in tests/integration/test_full_pipeline.py
+- [X] T034 [P] [US3] Unit test for InferenceResult model validation in tests/unit/test_inference_result.py (14 tests)
+- [X] T035 [P] [US3] Unit test for inferencer service (mock llama-cpp-python generation) in tests/unit/test_inferencer.py (12 tests)
+- [X] T036 [P] [US3] Contract test for infer command CLI interface in tests/contract/test_cli_interface.py (9 tests)
+- [X] T037 [US3] Integration test for full inference pipeline in tests/integration/test_full_pipeline.py (8 tests)
 
 ### Implementation for User Story 3
 
-- [ ] T038 [US3] Implement inference execution service in src/kcuda_validate/services/inferencer.py (llama-cpp-python generation)
-- [ ] T039 [US3] Implement performance metrics collection (tokens/sec, time to first token) in inferencer.py
-- [ ] T040 [US3] Implement GPU utilization monitoring during inference (pynvml) in metrics.py
-- [ ] T041 [US3] Implement infer command in src/kcuda_validate/cli/infer.py with options per cli.md contract
-- [ ] T042 [US3] Add inference output formatting in formatters.py (response display, metrics table)
-- [ ] T043 [US3] Add prompt validation (non-empty) in validators.py
-- [ ] T044 [US3] Wire infer command into __main__.py CLI entry point
+- [X] T038 [US3] Implement inference execution service in src/kcuda_validate/services/inferencer.py (Inferencer class with performance tracking)
+- [X] T039 [US3] Implement performance metrics collection (tokens/sec, time to first token) in inferencer.py - integrated in Inferencer.generate()
+- [X] T040 [US3] Implement GPU utilization monitoring during inference (pynvml) in metrics.py - integrated in Inferencer.generate()
+- [X] T041 [US3] Implement infer command in src/kcuda_validate/cli/infer.py with options per cli.md contract
+- [X] T042 [US3] Add inference output formatting in formatters.py (response display, metrics table) - output formatting implemented in CLI command
+- [X] T043 [US3] Add prompt validation (non-empty) in validators.py - validation implemented in Inferencer service
+- [X] T044 [US3] Wire infer command into __main__.py CLI entry point
 
-**Checkpoint**: User Story 3 complete - Full inference works independently, all tests pass
+**Checkpoint**: User Story 3 complete - Full inference works independently, all tests pass ✓
 
 ---
 

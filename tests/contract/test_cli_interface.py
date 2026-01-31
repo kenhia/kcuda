@@ -281,6 +281,123 @@ class TestLoadCommandContract:
         assert "--no-gpu" in result.output
 
 
+class TestInferCommandContract:
+    """Test infer command CLI contract per cli.md specification."""
+
+    def setup_method(self):
+        """Setup test runner."""
+        self.runner = CliRunner()
+
+    @patch("kcuda_validate.cli.infer.Inferencer")
+    def test_infer_command_success_output_format(self, mock_inferencer_class):
+        """Test infer command success output matches contract format."""
+        from kcuda_validate.models.inference_result import InferenceResult
+
+        # Mock successful inference
+        mock_inferencer = mock_inferencer_class.return_value
+        mock_inferencer.generate.return_value = InferenceResult.from_generation(
+            prompt="Hello, how are you?",
+            response="I'm doing well, thank you!",
+            tokens_generated=10,
+            time_to_first_token_sec=0.5,
+            total_time_sec=1.0,
+            gpu_utilization_percent=95.0,
+            vram_peak_mb=5000,
+        )
+
+        result = self.runner.invoke(cli, ["infer", "Hello, how are you?"])
+
+        # Should succeed
+        assert result.exit_code == 0
+
+        # Verify output format per cli.md contract
+        output_lower = result.output.lower()
+        assert "inference" in output_lower and ("completed" in output_lower or "passed" in output_lower)
+        assert "tokens" in output_lower
+        assert "response" in output_lower or "hello" in output_lower
+
+    @patch("kcuda_validate.cli.infer.Inferencer")
+    def test_infer_command_no_model_loaded_exit_code(self, mock_inferencer_class):
+        """Test infer command exit code 1 when no model loaded."""
+        # Mock no model loaded scenario
+        mock_inferencer_class.side_effect = RuntimeError("No model loaded")
+
+        result = self.runner.invoke(cli, ["infer", "Test prompt"])
+
+        # Exit code 1 for no model loaded
+        assert result.exit_code == 1
+        assert "model" in result.output.lower()
+
+    def test_infer_command_empty_prompt_exit_code(self):
+        """Test infer command exit code 3 for empty prompt."""
+        result = self.runner.invoke(cli, ["infer", ""])
+
+        # Exit code 3 for invalid prompt
+        assert result.exit_code == 3
+        assert "prompt" in result.output.lower() or "empty" in result.output.lower()
+
+    @patch("kcuda_validate.cli.infer.Inferencer")
+    def test_infer_command_inference_failure_exit_code(self, mock_inferencer_class):
+        """Test infer command exit code 2 for inference failure."""
+        from kcuda_validate.models.inference_result import InferenceResult
+
+        mock_inferencer = mock_inferencer_class.return_value
+        mock_inferencer.generate.return_value = InferenceResult.from_error(
+            prompt="Test", error_message="CUDA out of memory"
+        )
+
+        result = self.runner.invoke(cli, ["infer", "Test prompt"])
+
+        # Exit code 2 for inference failures
+        assert result.exit_code == 2
+        assert "failed" in result.output.lower() or "error" in result.output.lower()
+
+    def test_infer_command_has_max_tokens_option(self):
+        """Test infer command has --max-tokens option."""
+        result = self.runner.invoke(cli, ["infer", "--help"])
+
+        assert result.exit_code == 0
+        assert "--max-tokens" in result.output
+
+    def test_infer_command_has_temperature_option(self):
+        """Test infer command has --temperature option."""
+        result = self.runner.invoke(cli, ["infer", "--help"])
+
+        assert result.exit_code == 0
+        assert "--temperature" in result.output
+
+    def test_infer_command_has_load_model_option(self):
+        """Test infer command has --load-model option."""
+        result = self.runner.invoke(cli, ["infer", "--help"])
+
+        assert result.exit_code == 0
+        assert "--load-model" in result.output
+
+    @patch("kcuda_validate.cli.infer.Inferencer")
+    def test_infer_command_displays_performance_metrics(self, mock_inferencer_class):
+        """Test infer command displays performance metrics."""
+        from kcuda_validate.models.inference_result import InferenceResult
+
+        mock_inferencer = mock_inferencer_class.return_value
+        mock_inferencer.generate.return_value = InferenceResult.from_generation(
+            prompt="Test",
+            response="Response",
+            tokens_generated=50,
+            time_to_first_token_sec=0.8,
+            total_time_sec=3.2,
+            gpu_utilization_percent=98.0,
+            vram_peak_mb=5500,
+        )
+
+        result = self.runner.invoke(cli, ["infer", "Test prompt"])
+
+        output_lower = result.output.lower()
+        # Should display key performance metrics
+        assert "tokens" in output_lower
+        assert "time" in output_lower or "seconds" in output_lower
+        assert "throughput" in output_lower or "tokens/second" in output_lower or "tokens per second" in output_lower
+
+
 class TestGlobalOptions:
     """Test global CLI options work across all commands."""
 
