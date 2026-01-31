@@ -10,7 +10,7 @@ import pytest
 
 # Import will fail until we create the service - this is expected in TDD red phase
 try:
-    from kcuda_validate.services.inferencer import Inferencer, InferenceError
+    from kcuda_validate.services.inferencer import InferenceError, Inferencer
 except ImportError:
     # Create placeholder for tests to run
     class Inferencer:  # type: ignore
@@ -37,9 +37,7 @@ class TestInferencer:
 
         # Create mock model
         mock_model = MagicMock()
-        mock_model.return_value = {
-            "choices": [{"text": " I'm doing well, thank you!"}]
-        }
+        mock_model.return_value = {"choices": [{"text": " I'm doing well, thank you!"}]}
 
         inferencer = Inferencer(model=mock_model)
         result = inferencer.generate(
@@ -100,9 +98,7 @@ class TestInferencer:
         mock_model = MagicMock()
         inferencer = Inferencer(model=mock_model)
 
-        with pytest.raises(
-            InferenceError, match="[Tt]emperature.*must be.*between.*0.*and"
-        ):
+        with pytest.raises(InferenceError, match="[Tt]emperature.*must be.*between.*0.*and"):
             inferencer.generate(prompt=self.default_prompt, temperature=2.0)
 
     @patch("kcuda_validate.services.inferencer.pynvml")
@@ -163,6 +159,7 @@ class TestInferencer:
 
     def test_generate_with_streaming(self):
         """Test generation with streaming enabled."""
+
         # Mock streaming tokens
         def mock_generator():
             yield {"choices": [{"text": "Hello"}]}

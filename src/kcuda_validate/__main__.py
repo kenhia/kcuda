@@ -59,7 +59,40 @@ def cli(
 ) -> None:
     """CUDA LLM Hardware Validation Tool for WSL2."""
     if version:
+        # Show package version and key dependency versions
         click.echo(f"kcuda-validate version {__version__}")
+        click.echo("")
+        click.echo("Dependencies:")
+
+        # Import and show dependency versions
+        try:
+            import torch
+
+            click.echo(f"  torch: {torch.__version__}")
+        except (ImportError, AttributeError):
+            click.echo("  torch: not installed")
+
+        try:
+            import llama_cpp
+
+            click.echo(f"  llama-cpp-python: {llama_cpp.__version__}")
+        except (ImportError, AttributeError):
+            click.echo("  llama-cpp-python: not installed")
+
+        try:
+            import pynvml
+
+            click.echo(f"  nvidia-ml-py: {pynvml.__version__}")
+        except (ImportError, AttributeError):
+            click.echo("  nvidia-ml-py: not installed")
+
+        try:
+            import huggingface_hub
+
+            click.echo(f"  huggingface-hub: {huggingface_hub.__version__}")
+        except (ImportError, AttributeError):
+            click.echo("  huggingface-hub: not installed")
+
         ctx.exit(0)
 
     # If invoked without command, show help

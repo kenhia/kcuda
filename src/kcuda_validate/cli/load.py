@@ -147,7 +147,12 @@ def load(
 
         # Determine exit code based on error type
         error_msg = str(e).lower()
-        if "vram" in error_msg or "memory" in error_msg or "corrupt" in error_msg or "invalid" in error_msg:
+        if (
+            "vram" in error_msg
+            or "memory" in error_msg
+            or "corrupt" in error_msg
+            or "invalid" in error_msg
+        ):
             sys.exit(2)
         else:
             sys.exit(2)

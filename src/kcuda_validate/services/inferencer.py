@@ -1,7 +1,7 @@
 """Inference service for generating text from loaded models."""
 
 import time
-from typing import Optional, Union, Iterator, Dict, Any
+from typing import Any
 
 import pynvml
 
@@ -26,7 +26,7 @@ class Inferencer:
 
     def __init__(
         self,
-        model: Union[LLMModel, Any],
+        model: LLMModel | Any,
         device_id: int = 0,
         collect_metrics: bool = True,
     ) -> None:
@@ -46,10 +46,10 @@ class Inferencer:
         self._model = model
         self._device_id = device_id
         self._collect_metrics = collect_metrics
-        self._last_result: Optional[InferenceResult] = None
+        self._last_result: InferenceResult | None = None
 
     @property
-    def model(self) -> Union[LLMModel, Any]:
+    def model(self) -> LLMModel | Any:
         """Get the currently loaded model."""
         return self._model
 
@@ -97,8 +97,8 @@ class Inferencer:
 
         try:
             # Initialize GPU monitoring
-            gpu_utilization_percent: Optional[float] = None
-            vram_peak_mb: Optional[int] = None
+            gpu_utilization_percent: float | None = None
+            vram_peak_mb: int | None = None
 
             if self._collect_metrics:
                 try:
@@ -129,12 +129,11 @@ class Inferencer:
                         choice = chunk["choices"][0]
                         if "text" in choice:
                             result_text += choice["text"]
-            elif isinstance(model_output, dict):
+            elif isinstance(model_output, dict) and "choices" in model_output:
                 # Single response
-                if "choices" in model_output:
-                    choice = model_output["choices"][0]
-                    if "text" in choice:
-                        result_text = choice["text"]
+                choice = model_output["choices"][0]
+                if "text" in choice:
+                    result_text = choice["text"]
 
             # End timing
             end_time = time.time()
@@ -202,9 +201,7 @@ class Inferencer:
         except Exception as e:
             # Unexpected errors
             error_msg = f"Unexpected error during inference: {str(e)}"
-            self._last_result = InferenceResult.from_error(
-                prompt=prompt, error_message=error_msg
-            )
+            self._last_result = InferenceResult.from_error(prompt=prompt, error_message=error_msg)
             raise InferenceError(error_msg) from e
 
     def _count_tokens(self, text: str) -> int:
@@ -226,6 +223,6 @@ class Inferencer:
         return len(text.split())
 
     @property
-    def last_result(self) -> Optional[InferenceResult]:
+    def last_result(self) -> InferenceResult | None:
         """Get the last inference result."""
         return self._last_result

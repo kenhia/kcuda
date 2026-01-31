@@ -60,9 +60,7 @@ class GPUDevice:
                     f"Invalid compute capability format: {self.compute_capability}"
                 ) from None
         except AttributeError as e:
-            raise ValueError(
-                f"Invalid compute capability format: {self.compute_capability}"
-            ) from e
+            raise ValueError(f"Invalid compute capability format: {self.compute_capability}") from e
 
         # Validate CUDA version is present
         if not self.cuda_version or not self.cuda_version.strip():

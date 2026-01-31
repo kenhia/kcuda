@@ -61,9 +61,7 @@ class TestInferenceResultValidation:
 
     def test_tokens_generated_must_be_positive_for_success(self):
         """Test that tokens_generated must be > 0 when success=True."""
-        with pytest.raises(
-            ValueError, match="[Ii]nvalid tokens_generated.*must be > 0"
-        ):
+        with pytest.raises(ValueError, match="[Ii]nvalid tokens_generated.*must be > 0"):
             InferenceResult(
                 prompt="Test",
                 response="Response",
@@ -104,9 +102,7 @@ class TestInferenceResultValidation:
 
     def test_tokens_per_second_must_be_positive_for_success(self):
         """Test that tokens_per_second must be > 0 when success=True."""
-        with pytest.raises(
-            ValueError, match="[Ii]nvalid tokens_per_second.*must be > 0"
-        ):
+        with pytest.raises(ValueError, match="[Ii]nvalid tokens_per_second.*must be > 0"):
             InferenceResult(
                 prompt="Test",
                 response="Response",

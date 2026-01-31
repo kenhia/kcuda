@@ -3,7 +3,7 @@
 import click
 
 from kcuda_validate.lib.logger import setup_logger
-from kcuda_validate.services.inferencer import Inferencer, InferenceError
+from kcuda_validate.services.inferencer import InferenceError, Inferencer
 
 # Will be accessed from module state (loaded by load command)
 _loaded_model = None
@@ -109,14 +109,14 @@ def infer(
                 click.echo('Or use: kcuda-validate infer --load-model "Your prompt"')
                 click.echo("")
                 click.echo("Inference test: FAILED")
-                raise SystemExit(1)
+                raise SystemExit(1) from None
             raise
         except RuntimeError as e:
             # Model not loaded or other runtime error
             click.echo(f"✗ Failed to create inferencer: {e}", err=True)
             click.echo("")
             click.echo("Inference test: FAILED")
-            raise SystemExit(1)
+            raise SystemExit(1) from e
 
         # Generate response
         try:
@@ -130,7 +130,7 @@ def infer(
             click.echo(f"✗ Inference failed: {e}", err=True)
             click.echo("")
             click.echo("Inference test: FAILED")
-            raise SystemExit(3)
+            raise SystemExit(3) from e
 
         # Check if generation succeeded
         if not result.success:
@@ -173,4 +173,4 @@ def infer(
         click.echo(f"✗ Unexpected error: {e}", err=True)
         click.echo("")
         click.echo("Inference test: FAILED")
-        raise SystemExit(2)
+        raise SystemExit(2) from e

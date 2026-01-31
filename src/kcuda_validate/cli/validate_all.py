@@ -117,7 +117,7 @@ def validate_all(repo_id: str, filename: str, prompt: str, skip_on_error: bool):
         loader = ModelLoader()
 
         # Download model if needed
-        click.echo(f"\n→ Checking model cache...")
+        click.echo("\n→ Checking model cache...")
         click.echo(f"  Model: {repo_id}")
         click.echo(f"  File: {filename}")
 
@@ -158,8 +158,8 @@ def validate_all(repo_id: str, filename: str, prompt: str, skip_on_error: bool):
 
     try:
         # Run inference
-        click.echo(f"\n→ Running inference...")
-        click.echo(f"  Prompt: \"{prompt}\"")
+        click.echo("\n→ Running inference...")
+        click.echo(f'  Prompt: "{prompt}"')
 
         inferencer = Inferencer(model_path=model_path, use_gpu=True)
         result = inferencer.generate(

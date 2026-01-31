@@ -312,7 +312,9 @@ class TestInferCommandContract:
 
         # Verify output format per cli.md contract
         output_lower = result.output.lower()
-        assert "inference" in output_lower and ("completed" in output_lower or "passed" in output_lower)
+        assert "inference" in output_lower and (
+            "completed" in output_lower or "passed" in output_lower
+        )
         assert "tokens" in output_lower
         assert "response" in output_lower or "hello" in output_lower
 
@@ -395,7 +397,11 @@ class TestInferCommandContract:
         # Should display key performance metrics
         assert "tokens" in output_lower
         assert "time" in output_lower or "seconds" in output_lower
-        assert "throughput" in output_lower or "tokens/second" in output_lower or "tokens per second" in output_lower
+        assert (
+            "throughput" in output_lower
+            or "tokens/second" in output_lower
+            or "tokens per second" in output_lower
+        )
 
 
 class TestValidateAllCommandContract:
@@ -492,7 +498,6 @@ class TestValidateAllCommandContract:
     @patch("kcuda_validate.cli.validate_all.ModelLoader")
     def test_validate_all_command_failure_load_step(self, mock_loader_class, mock_detector_class):
         """Test validate-all command handles model load failure."""
-        from kcuda_validate.models.llm_model import LLMModel
 
         # Mock successful GPU detection
         mock_detector = mock_detector_class.return_value

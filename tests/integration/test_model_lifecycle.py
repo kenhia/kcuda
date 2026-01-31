@@ -70,7 +70,9 @@ class TestModelLifecycleIntegration:
                 print(f"Exception: {result.exception}")
                 import traceback
 
-                traceback.print_exception(type(result.exception), result.exception, result.exception.__traceback__)
+                traceback.print_exception(
+                    type(result.exception), result.exception, result.exception.__traceback__
+                )
 
         # Should succeed
         assert result.exit_code == 0
@@ -138,9 +140,7 @@ class TestModelLifecycleIntegration:
         mock_llama_class.return_value = mock_llama_instance
 
         # Execute with custom options
-        self.runner.invoke(
-            cli, ["load", "--repo-id", custom_repo, "--filename", custom_filename]
-        )
+        self.runner.invoke(cli, ["load", "--repo-id", custom_repo, "--filename", custom_filename])
 
         # Verify download was called with custom parameters
         mock_download.assert_called_once()

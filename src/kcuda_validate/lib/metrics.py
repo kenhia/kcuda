@@ -1,11 +1,12 @@
 """Performance metrics collection utilities."""
 
 import time
-from contextlib import contextmanager
-from typing import Generator, Optional
+from collections.abc import Generator
+from contextlib import contextmanager, suppress
 
 try:
     import pynvml
+
     PYNVML_AVAILABLE = True
 except ImportError:
     PYNVML_AVAILABLE = False
@@ -33,7 +34,7 @@ class MetricsCollector:
             except Exception:
                 self.nvml_initialized = False
 
-    def get_gpu_memory_usage(self) -> Optional[int]:
+    def get_gpu_memory_usage(self) -> int | None:
         """
         Get current GPU memory usage in MB.
 
@@ -49,7 +50,7 @@ class MetricsCollector:
         except Exception:
             return None
 
-    def get_gpu_utilization(self) -> Optional[float]:
+    def get_gpu_utilization(self) -> float | None:
         """
         Get current GPU utilization percentage.
 
@@ -85,10 +86,8 @@ class MetricsCollector:
     def shutdown(self) -> None:
         """Cleanup NVML resources."""
         if self.nvml_initialized:
-            try:
+            with suppress(Exception):
                 pynvml.nvmlShutdown()
-            except Exception:
-                pass
 
 
 @contextmanager

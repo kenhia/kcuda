@@ -2,10 +2,8 @@
 
 from io import StringIO
 from pathlib import Path
-from typing import Optional
 
 from rich.console import Console
-from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.table import Table
 
@@ -16,19 +14,19 @@ from kcuda_validate.models.llm_model import LLMModel
 console = Console()
 
 
-def format_gpu_info(gpu: GPUDevice, warnings: Optional[list[str]] = None) -> str:
+def format_gpu_info(gpu: GPUDevice, warnings: list[str] | None = None) -> str:
     """Format GPU detection success output as string.
-    
+
     Args:
         gpu: Detected GPU device
         warnings: Optional list of warning messages for requirement violations
-        
+
     Returns:
         Formatted output string
     """
     buffer = StringIO()
     temp_console = Console(file=buffer, force_terminal=True)
-    
+
     temp_console.print("✓ CUDA Available: Yes", style="bold green")
     temp_console.print(f"✓ GPU Detected: {gpu.name}", style="bold green")
     temp_console.print(f"  - VRAM Total: {gpu.vram_total_mb} MB")
@@ -38,7 +36,7 @@ def format_gpu_info(gpu: GPUDevice, warnings: Optional[list[str]] = None) -> str
     temp_console.print(f"  - Compute Capability: {gpu.compute_capability}")
     temp_console.print(f"  - Device ID: {gpu.device_id}")
     temp_console.print()
-    
+
     if warnings:
         temp_console.print("⚠ Warnings:", style="bold yellow")
         for warning in warnings:
@@ -47,22 +45,22 @@ def format_gpu_info(gpu: GPUDevice, warnings: Optional[list[str]] = None) -> str
         temp_console.print("Hardware validation: FAILED (requirements not met)", style="bold red")
     else:
         temp_console.print("Hardware validation: PASSED", style="bold green")
-    
+
     return buffer.getvalue()
 
 
 def format_gpu_error(error_message: str) -> str:
     """Format GPU detection error output as string.
-    
+
     Args:
         error_message: Error message to display
-        
+
     Returns:
         Formatted error output string
     """
     buffer = StringIO()
     temp_console = Console(file=buffer, force_terminal=True)
-    
+
     temp_console.print("✗ CUDA Available: No", style="bold red")
     temp_console.print("✗ GPU Detected: None", style="bold red")
     temp_console.print()
@@ -74,47 +72,47 @@ def format_gpu_error(error_message: str) -> str:
     temp_console.print("  3. nvidia-smi works in WSL2 terminal")
     temp_console.print()
     temp_console.print("Hardware validation: FAILED", style="bold red")
-    
+
     return buffer.getvalue()
 
 
 def format_model_error(error_message: str) -> str:
     """Format model loading error output as string.
-    
+
     Args:
         error_message: Error message to display
-        
+
     Returns:
         Formatted error output string
     """
     buffer = StringIO()
     temp_console = Console(file=buffer, force_terminal=True)
-    
+
     temp_console.print("\n✗ Model loading failed", style="bold red")
     temp_console.print(f"Error: {error_message}", style="red")
     temp_console.print()
     temp_console.print("Model load: FAILED", style="bold red")
-    
+
     return buffer.getvalue()
 
 
 def format_inference_error(error_message: str) -> str:
     """Format inference error output as string.
-    
+
     Args:
         error_message: Error message to display
-        
+
     Returns:
         Formatted error output string
     """
     buffer = StringIO()
     temp_console = Console(file=buffer, force_terminal=True)
-    
+
     temp_console.print("\n✗ Inference failed", style="bold red")
     temp_console.print(f"Error: {error_message}", style="red")
     temp_console.print()
     temp_console.print("Inference test: FAILED", style="bold red")
-    
+
     return buffer.getvalue()
 
 
@@ -137,7 +135,7 @@ def format_gpu_detection_success(gpu: GPUDevice) -> None:
     console.print("Hardware validation: PASSED", style="bold green")
 
 
-def format_gpu_detection_failure(error: str, log_file: Optional[Path] = None) -> None:
+def format_gpu_detection_failure(error: str, log_file: Path | None = None) -> None:
     """
     Format and display GPU detection failure.
 
@@ -178,16 +176,16 @@ def format_model_loading_progress() -> Progress:
 
 def format_model_info(model: LLMModel) -> str:
     """Format model information after successful load.
-    
+
     Args:
         model: Loaded LLM model
-        
+
     Returns:
         Formatted model info string
     """
     buffer = StringIO()
     temp_console = Console(file=buffer, force_terminal=True)
-    
+
     temp_console.print("\n[bold cyan]Model Information:[/bold cyan]")
     temp_console.print(f"  Repository: [bold]{model.repo_id}[/bold]")
     temp_console.print(f"  Filename: {model.filename}")
@@ -197,10 +195,10 @@ def format_model_info(model: LLMModel) -> str:
     temp_console.print(f"  Context Length: {model.context_length:,} tokens")
     if model.is_loaded:
         temp_console.print(f"  VRAM Usage: {model.vram_usage_mb:,.0f} MB")
-        temp_console.print(f"  Status: [green]Loaded[/green]")
+        temp_console.print("  Status: [green]Loaded[/green]")
     else:
-        temp_console.print(f"  Status: [yellow]Downloaded[/yellow]")
-    
+        temp_console.print("  Status: [yellow]Downloaded[/yellow]")
+
     return buffer.getvalue()
 
 
@@ -222,7 +220,7 @@ def format_model_loaded_success(model: LLMModel, gpu_free_vram_mb: int) -> None:
     console.print("Model load: PASSED", style="bold green")
 
 
-def format_model_loading_failure(error: str, log_file: Optional[Path] = None) -> None:
+def format_model_loading_failure(error: str, log_file: Path | None = None) -> None:
     """
     Format and display model loading failure.
 
@@ -346,18 +344,18 @@ def format_validation_summary(steps: dict) -> str:
 
 def format_error(title: str, message: str) -> str:
     """Format error message with title.
-    
+
     Args:
         title: Error title
         message: Error message
-        
+
     Returns:
         Formatted error string
     """
     buffer = StringIO()
     temp_console = Console(file=buffer, force_terminal=True)
-    
+
     temp_console.print(f"\n[bold red]✗ {title}[/bold red]")
     temp_console.print(f"[red]{message}[/red]\n")
-    
+
     return buffer.getvalue()

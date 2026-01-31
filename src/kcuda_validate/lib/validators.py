@@ -1,11 +1,7 @@
 """Input validation utilities."""
 
-import re
-from pathlib import Path
-from typing import Optional
 
-
-def validate_prompt(prompt: str) -> tuple[bool, Optional[str]]:
+def validate_prompt(prompt: str) -> tuple[bool, str | None]:
     """
     Validate user prompt for inference.
 
@@ -24,7 +20,7 @@ def validate_prompt(prompt: str) -> tuple[bool, Optional[str]]:
     return True, None
 
 
-def validate_repo_id(repo_id: str) -> tuple[bool, Optional[str]]:
+def validate_repo_id(repo_id: str) -> tuple[bool, str | None]:
     """
     Validate Hugging Face repository ID format.
 
@@ -52,7 +48,7 @@ def validate_repo_id(repo_id: str) -> tuple[bool, Optional[str]]:
     return True, None
 
 
-def validate_filename(filename: str) -> tuple[bool, Optional[str]]:
+def validate_filename(filename: str) -> tuple[bool, str | None]:
     """
     Validate GGUF filename format.
 
@@ -75,7 +71,7 @@ def validate_filename(filename: str) -> tuple[bool, Optional[str]]:
     return True, None
 
 
-def validate_gpu_id(device_id: int) -> tuple[bool, Optional[str]]:
+def validate_gpu_id(device_id: int) -> tuple[bool, str | None]:
     """
     Validate GPU device ID.
 
@@ -94,7 +90,7 @@ def validate_gpu_id(device_id: int) -> tuple[bool, Optional[str]]:
     return True, None
 
 
-def validate_temperature(temperature: float) -> tuple[bool, Optional[str]]:
+def validate_temperature(temperature: float) -> tuple[bool, str | None]:
     """
     Validate sampling temperature.
 
@@ -113,7 +109,7 @@ def validate_temperature(temperature: float) -> tuple[bool, Optional[str]]:
     return True, None
 
 
-def validate_max_tokens(max_tokens: int) -> tuple[bool, Optional[str]]:
+def validate_max_tokens(max_tokens: int) -> tuple[bool, str | None]:
     """
     Validate max tokens parameter.
 

@@ -8,7 +8,6 @@ import logging
 import sys
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
-from typing import Optional
 
 # Default log settings
 DEFAULT_LOG_DIR = Path.home() / ".cache" / "kcuda" / "logs"
@@ -20,7 +19,7 @@ BACKUP_COUNT = 5
 def setup_logger(
     name: str = "kcuda_validate",
     log_level: str = "INFO",
-    log_file: Optional[Path] = None,
+    log_file: Path | None = None,
     enable_file_logging: bool = True,
 ) -> logging.Logger:
     """
@@ -56,9 +55,7 @@ def setup_logger(
         # Create log directory
         log_file.parent.mkdir(parents=True, exist_ok=True)
 
-        file_handler = RotatingFileHandler(
-            log_file, maxBytes=MAX_BYTES, backupCount=BACKUP_COUNT
-        )
+        file_handler = RotatingFileHandler(log_file, maxBytes=MAX_BYTES, backupCount=BACKUP_COUNT)
         file_handler.setLevel(logging.DEBUG)  # Log everything to file
         file_format = logging.Formatter(
             "%(asctime)s - %(name)s - %(levelname)s - %(funcName)s:%(lineno)d - %(message)s",

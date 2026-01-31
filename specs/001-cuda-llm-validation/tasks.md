@@ -177,12 +177,12 @@ Using single project structure:
 - [ ] T052 [P] Implement graceful GPU memory cleanup on exit/error in model_loader.py
 - [ ] T053 [P] Add detailed CUDA diagnostics to log files (driver info, memory allocations)
 - [ ] T054 [P] Create CLI --help text for all commands matching cli.md contract
-- [ ] T055 [P] Add --version output showing package version and dependency versions
+- [X] T055 [P] Add --version output showing package version and dependency versions
 - [ ] T056 [P] Improve error messages to include log file path reference (per updated cli.md)
 - [ ] T057 [P] Add support for KCUDA_LOG_DIR and other environment variables from cli.md
 - [ ] T058 Verify all exit codes match cli.md contract specifications
 - [ ] T059 Run full test suite and verify 100% of contract tests pass
-- [ ] T060 Run ruff format and ruff check, fix all violations
+- [X] T060 Run ruff format and ruff check, fix all violations
 - [ ] T061 Update README.md with installation instructions and examples
 - [ ] T062 Verify quickstart.md instructions work end-to-end
 
