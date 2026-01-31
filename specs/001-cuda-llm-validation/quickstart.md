@@ -39,13 +39,12 @@ source .venv/bin/activate  # On Windows WSL2
 
 ```bash
 # Install with CUDA support (pre-built wheels)
-uv pip install \
-  llama-cpp-python \
+uv add llama-cpp-python \
   --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cu121
 
 # Install remaining dependencies
-uv pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
-uv pip install pynvml huggingface_hub click rich
+uv add torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+uv add pynvml huggingface-hub click rich
 ```
 
 ### 4. Verify Installation
@@ -164,10 +163,10 @@ Or close GPU applications (browsers, games).
 **Solution**: Reinstall with correct CUDA wheel:
 
 ```bash
-uv pip uninstall llama-cpp-python
-uv pip install llama-cpp-python \
+uv remove llama-cpp-python
+uv add llama-cpp-python \
   --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cu121 \
-  --force-reinstall --no-cache-dir
+  --no-cache
 ```
 
 ## Performance Benchmarks
@@ -232,7 +231,8 @@ Logs are automatically rotated at 10MB with 5 backup files retained.
 For development with live reloading:
 
 ```bash
-uv pip install -e .
+# Editable install with dev dependencies
+uv install -e .
 kcuda-validate validate-all  # Installed as CLI command
 ```
 
