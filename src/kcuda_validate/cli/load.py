@@ -23,8 +23,8 @@ console = Console()
 )
 @click.option(
     "--filename",
-    default="mistralrp-noromaid-nsfw-mistral-7b.Q4_K_M.gguf",
-    help="Model filename within repository [default: mistralrp-noromaid-nsfw-mistral-7b.Q4_K_M.gguf]",
+    default="MistralRP-Noromaid-NSFW-7B-Q4_0.gguf",
+    help="Model filename within repository [default: MistralRP-Noromaid-NSFW-7B-Q4_0.gguf]",
 )
 @click.option(
     "--skip-download",

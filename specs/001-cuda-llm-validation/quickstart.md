@@ -89,13 +89,13 @@ Download and load a model into GPU memory:
 uv run kcuda-validate load
 ```
 
-This uses the default model (Mistral 7B Q4_K_M). **First run downloads ~4GB** which may take 5-30 minutes depending on your connection.
+This uses the default model (Mistral 7B Q4_0). **First run downloads ~4GB** which may take 5-30 minutes depending on your connection.
 
 **Expected output:**
 ```
 Downloading model from Hugging Face...
 Repository: Ttimofeyka/MistralRP-Noromaid-NSFW-Mistral-7B-GGUF
-File: mistralrp-noromaid-nsfw-mistral-7b.Q4_K_M.gguf
+File: MistralRP-Noromaid-NSFW-7B-Q4_0.gguf
 ✓ Downloaded to: ~/.cache/huggingface/hub/...
 
 Loading model into memory...
@@ -103,10 +103,10 @@ Loading model into memory...
 
 Model Information:
   Repository: Ttimofeyka/MistralRP-Noromaid-NSFW-Mistral-7B-GGUF
-  Filename: mistralrp-noromaid-nsfw-mistral-7b.Q4_K_M.gguf
-  File Size: 4,168 MB
-  Parameters: 7.95B
-  Quantization: Q4_K_M
+  Filename: MistralRP-Noromaid-NSFW-7B-Q4_0.gguf
+  File Size: 4,140 MB
+  Parameters: 7.24B
+  Quantization: Q4_0
   Context Length: 8,192 tokens
   VRAM Usage: 4,793 MB
   Status: Loaded
@@ -244,7 +244,7 @@ uv add llama-cpp-python \
 
 ## Performance Benchmarks
 
-Expected performance on common GPUs (Mistral 7B Q4_K_M):
+Expected performance on common GPUs (Mistral 7B Q4_0):
 
 | GPU Model          | VRAM | Tokens/Sec | Time to 1st Token |
 |--------------------|------|------------|-------------------|

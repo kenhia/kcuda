@@ -78,7 +78,7 @@ kcuda-validate load [OPTIONS]
 --repo-id TEXT        Hugging Face repository ID 
                       [default: Ttimofeyka/MistralRP-Noromaid-NSFW-Mistral-7B-GGUF]
 --filename TEXT       Specific GGUF file to download
-                      [default: mistralrp-noromaid-nsfw-mistral-7b.Q4_K_M.gguf]
+                      [default: MistralRP-Noromaid-NSFW-7B-Q4_0.gguf]
 --skip-download       Skip download if model already cached
 --no-gpu              Load in CPU mode (for testing)
 ```
@@ -87,7 +87,7 @@ kcuda-validate load [OPTIONS]
 ```
 → Checking model cache...
   Model: Ttimofeyka/MistralRP-Noromaid-NSFW-Mistral-7B-GGUF
-  File: mistralrp-noromaid-nsfw-mistral-7b.Q4_K_M.gguf
+  File: MistralRP-Noromaid-NSFW-7B-Q4_0.gguf
 
 ✓ Model found in cache: /home/user/.cache/huggingface/hub/models--Ttimofeyka--MistralRP-Noromaid-NSFW-Mistral-7B-GGUF/...
   Size: 4168 MB
@@ -97,7 +97,7 @@ kcuda-validate load [OPTIONS]
 
 ✓ Model loaded successfully
   - Parameters: 7.24B
-  - Quantization: Q4_K_M
+  - Quantization: Q4_0
   - Context Length: 8192 tokens
   - VRAM Usage: 4832 MB
   - Free VRAM Remaining: 6688 MB
@@ -168,7 +168,7 @@ PROMPT                Text prompt for generation [default: "Hello, how are you?"
 **Output Format** (success):
 ```
 → Checking model status...
-✓ Model loaded: mistralrp-noromaid-nsfw-mistral-7b.Q4_K_M.gguf
+✓ Model loaded: MistralRP-Noromaid-NSFW-7B-Q4_0.gguf
 
 → Running inference...
   Prompt: "Hello, how are you?"
