@@ -155,14 +155,14 @@ Using single project structure:
 
 ### Tests for validate-all Command (TDD - Write First)
 
-- [ ] T045 [P] Contract test for validate-all command CLI interface in tests/contract/test_cli_interface.py
-- [ ] T046 Integration test for full validation pipeline in tests/integration/test_full_pipeline.py
+- [X] T045 [P] Contract test for validate-all command CLI interface in tests/contract/test_cli_interface.py
+- [X] T046 Integration test for full validation pipeline in tests/integration/test_full_pipeline.py
 
 ### Implementation for validate-all Command
 
-- [ ] T047 Implement validate-all command in src/kcuda_validate/cli/validate_all.py orchestrating detect → load → infer
-- [ ] T048 Add validation summary formatting in formatters.py (pass/fail status for each step)
-- [ ] T049 Wire validate-all command into __main__.py CLI entry point
+- [X] T047 Implement validate-all command in src/kcuda_validate/cli/validate_all.py orchestrating detect → load → infer
+- [X] T048 Add validation summary formatting in formatters.py (pass/fail status for each step)
+- [X] T049 Wire validate-all command into __main__.py CLI entry point
 
 **Checkpoint**: Full validation pipeline works end-to-end
 

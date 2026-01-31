@@ -12,6 +12,7 @@ eggs/
 .eggs/
 lib/
 lib64/
+!src/kcuda_validate/lib/
 parts/
 sdist/
 var/

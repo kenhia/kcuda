@@ -10,6 +10,7 @@ from kcuda_validate import __version__
 from kcuda_validate.cli.detect import detect
 from kcuda_validate.cli.infer import infer
 from kcuda_validate.cli.load import load
+from kcuda_validate.cli.validate_all import validate_all
 from kcuda_validate.lib.logger import setup_logger
 
 # Default log configuration from environment
@@ -97,6 +98,7 @@ def cli(
 cli.add_command(detect)
 cli.add_command(infer)
 cli.add_command(load)
+cli.add_command(validate_all)
 
 
 def main() -> None:

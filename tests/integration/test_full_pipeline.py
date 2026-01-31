@@ -236,11 +236,245 @@ class TestValidateAllCommand:
         """Setup test dependencies."""
         self.runner = CliRunner()
 
-    def test_validate_all_command_exists(self):
-        """Test that validate-all command is available."""
-        result = self.runner.invoke(cli, ["--help"])
+    @patch("kcuda_validate.cli.validate_all.Inferencer")
+    @patch("kcuda_validate.cli.validate_all.ModelLoader")
+    @patch("kcuda_validate.cli.validate_all.GPUDetector")
+    def test_validate_all_full_pipeline_success(
+        self, mock_detector_class, mock_loader_class, mock_inferencer_class
+    ):
+        """Test validate-all runs complete detect → load → infer pipeline."""
+        from kcuda_validate.models.gpu_device import GPUDevice
+        from kcuda_validate.models.inference_result import InferenceResult
+        from kcuda_validate.models.llm_model import LLMModel
 
-        # validate-all command should be listed
-        # This will be implemented in Phase 6
-        # For now, just verify help works
+        # Mock GPU detection
+        mock_detector = mock_detector_class.return_value
+        mock_detector.detect.return_value = GPUDevice(
+            name="NVIDIA GeForce RTX 3060",
+            vram_total_mb=12288,
+            vram_free_mb=11520,
+            cuda_version="12.1",
+            driver_version="525.60.11",
+            compute_capability="8.6",
+            device_id=0,
+        )
+
+        # Mock model loading
+        mock_loader = mock_loader_class.return_value
+        mock_loader.download_model.return_value = "/path/to/model.gguf"
+        mock_loader.load_model.return_value = LLMModel(
+            repo_id="Ttimofeyka/MistralRP-Noromaid-NSFW-Mistral-7B-GGUF",
+            filename="mistralrp-noromaid-nsfw-mistral-7b.Q4_K_M.gguf",
+            local_path="/path/to/model.gguf",
+            file_size_mb=4168,
+            parameter_count=7_240_000_000,
+            quantization_type="Q4_K_M",
+            context_length=8192,
+            vram_usage_mb=4832,
+            is_loaded=True,
+        )
+
+        # Mock inference
+        mock_inferencer = mock_inferencer_class.return_value
+        mock_inferencer.generate.return_value = InferenceResult.from_generation(
+            prompt="Hello, how are you?",
+            response="I'm doing well, thank you for asking!",
+            tokens_generated=20,
+            time_to_first_token_sec=0.89,
+            total_time_sec=1.5,
+            gpu_utilization_percent=98.0,
+            vram_peak_mb=5000,
+        )
+
+        # Run validate-all command
+        result = self.runner.invoke(cli, ["validate-all"])
+
+        # Should succeed
         assert result.exit_code == 0
+
+        # Verify all steps executed
+        mock_detector.detect.assert_called_once()
+        mock_loader.download_model.assert_called_once()
+        mock_loader.load_model.assert_called_once()
+        mock_inferencer.generate.assert_called_once()
+
+        # Verify output includes summary
+        output_lower = result.output.lower()
+        assert "summary" in output_lower
+        assert "gpu detection" in output_lower or "detection" in output_lower
+        assert "model" in output_lower
+        assert "inference" in output_lower
+        assert "passed" in output_lower or "success" in output_lower
+
+    @patch("kcuda_validate.cli.validate_all.GPUDetector")
+    def test_validate_all_stops_on_detection_failure(self, mock_detector_class):
+        """Test validate-all stops when GPU detection fails."""
+        from kcuda_validate.services.gpu_detector import GPUDetectionError
+
+        # Mock GPU detection failure
+        mock_detector = mock_detector_class.return_value
+        mock_detector.detect.side_effect = GPUDetectionError("No GPU found")
+
+        result = self.runner.invoke(cli, ["validate-all"])
+
+        # Should fail
+        assert result.exit_code == 1
+
+        # Should show failure
+        output_lower = result.output.lower()
+        assert "failed" in output_lower or "error" in output_lower
+
+    @patch("kcuda_validate.cli.validate_all.ModelLoader")
+    @patch("kcuda_validate.cli.validate_all.GPUDetector")
+    def test_validate_all_stops_on_load_failure(self, mock_detector_class, mock_loader_class):
+        """Test validate-all stops when model loading fails."""
+        from kcuda_validate.models.gpu_device import GPUDevice
+
+        # Mock successful GPU detection
+        mock_detector = mock_detector_class.return_value
+        mock_detector.detect.return_value = GPUDevice(
+            name="NVIDIA GeForce RTX 3060",
+            vram_total_mb=12288,
+            vram_free_mb=11520,
+            cuda_version="12.1",
+            driver_version="525.60.11",
+            compute_capability="8.6",
+            device_id=0,
+        )
+
+        # Mock model loading failure
+        mock_loader = mock_loader_class.return_value
+        mock_loader.download_model.side_effect = RuntimeError("Download failed")
+
+        result = self.runner.invoke(cli, ["validate-all"])
+
+        # Should fail
+        assert result.exit_code == 1
+
+        # Should show failure
+        output_lower = result.output.lower()
+        assert "failed" in output_lower or "error" in output_lower
+
+    @patch("kcuda_validate.cli.validate_all.Inferencer")
+    @patch("kcuda_validate.cli.validate_all.ModelLoader")
+    @patch("kcuda_validate.cli.validate_all.GPUDetector")
+    def test_validate_all_stops_on_inference_failure(
+        self, mock_detector_class, mock_loader_class, mock_inferencer_class
+    ):
+        """Test validate-all stops when inference fails."""
+        from kcuda_validate.models.gpu_device import GPUDevice
+        from kcuda_validate.models.inference_result import InferenceResult
+        from kcuda_validate.models.llm_model import LLMModel
+
+        # Mock successful GPU detection
+        mock_detector = mock_detector_class.return_value
+        mock_detector.detect.return_value = GPUDevice(
+            name="NVIDIA GeForce RTX 3060",
+            vram_total_mb=12288,
+            vram_free_mb=11520,
+            cuda_version="12.1",
+            driver_version="525.60.11",
+            compute_capability="8.6",
+            device_id=0,
+        )
+
+        # Mock successful model loading
+        mock_loader = mock_loader_class.return_value
+        mock_loader.download_model.return_value = "/path/to/model.gguf"
+        mock_loader.load_model.return_value = LLMModel(
+            repo_id="test/model",
+            filename="model.gguf",
+            local_path="/path/to/model.gguf",
+            file_size_mb=4000,
+            parameter_count=7_000_000_000,
+            quantization_type="Q4_K_M",
+            context_length=8192,
+            vram_usage_mb=4500,
+            is_loaded=True,
+        )
+
+        # Mock inference failure
+        mock_inferencer = mock_inferencer_class.return_value
+        mock_inferencer.generate.return_value = InferenceResult.from_error(
+            prompt="Test", error_message="CUDA out of memory"
+        )
+
+        result = self.runner.invoke(cli, ["validate-all"])
+
+        # Should fail
+        assert result.exit_code == 1
+
+        # Should show failure
+        output_lower = result.output.lower()
+        assert "failed" in output_lower or "error" in output_lower
+
+    @patch("kcuda_validate.cli.validate_all.Inferencer")
+    @patch("kcuda_validate.cli.validate_all.ModelLoader")
+    @patch("kcuda_validate.cli.validate_all.GPUDetector")
+    def test_validate_all_custom_options(
+        self, mock_detector_class, mock_loader_class, mock_inferencer_class
+    ):
+        """Test validate-all accepts custom repo, filename, and prompt."""
+        from kcuda_validate.models.gpu_device import GPUDevice
+        from kcuda_validate.models.inference_result import InferenceResult
+        from kcuda_validate.models.llm_model import LLMModel
+
+        # Mock all steps successful
+        mock_detector = mock_detector_class.return_value
+        mock_detector.detect.return_value = GPUDevice(
+            name="NVIDIA GeForce RTX 3060",
+            vram_total_mb=12288,
+            vram_free_mb=11520,
+            cuda_version="12.1",
+            driver_version="525.60.11",
+            compute_capability="8.6",
+            device_id=0,
+        )
+
+        mock_loader = mock_loader_class.return_value
+        mock_loader.download_model.return_value = "/path/to/custom.gguf"
+        mock_loader.load_model.return_value = LLMModel(
+            repo_id="custom/repo",
+            filename="custom.gguf",
+            local_path="/path/to/custom.gguf",
+            file_size_mb=3000,
+            parameter_count=5_000_000_000,
+            quantization_type="Q4_K_M",
+            context_length=4096,
+            vram_usage_mb=3500,
+            is_loaded=True,
+        )
+
+        mock_inferencer = mock_inferencer_class.return_value
+        mock_inferencer.generate.return_value = InferenceResult.from_generation(
+            prompt="Custom prompt",
+            response="Custom response",
+            tokens_generated=15,
+            time_to_first_token_sec=0.5,
+            total_time_sec=1.0,
+            gpu_utilization_percent=95.0,
+            vram_peak_mb=4000,
+        )
+
+        # Run with custom options
+        result = self.runner.invoke(
+            cli,
+            [
+                "validate-all",
+                "--repo-id",
+                "custom/repo",
+                "--filename",
+                "custom.gguf",
+                "--prompt",
+                "Custom prompt",
+            ],
+        )
+
+        # Should succeed
+        assert result.exit_code == 0
+
+        # Verify custom options were used
+        mock_loader.download_model.assert_called_once()
+        call_kwargs = mock_loader.download_model.call_args[1]
+        assert call_kwargs.get("repo_id") == "custom/repo"
+        assert call_kwargs.get("filename") == "custom.gguf"

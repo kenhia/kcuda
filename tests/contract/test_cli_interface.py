@@ -398,6 +398,220 @@ class TestInferCommandContract:
         assert "throughput" in output_lower or "tokens/second" in output_lower or "tokens per second" in output_lower
 
 
+class TestValidateAllCommandContract:
+    """Test validate-all command matches CLI contract specification."""
+
+    def setup_method(self):
+        """Setup test runner."""
+        self.runner = CliRunner()
+
+    @patch("kcuda_validate.cli.validate_all.GPUDetector")
+    @patch("kcuda_validate.cli.validate_all.ModelLoader")
+    @patch("kcuda_validate.cli.validate_all.Inferencer")
+    def test_validate_all_command_success_all_steps(
+        self, mock_inferencer_class, mock_loader_class, mock_detector_class
+    ):
+        """Test validate-all command runs all steps and shows summary."""
+        from kcuda_validate.models.inference_result import InferenceResult
+
+        # Mock successful GPU detection
+        mock_detector = mock_detector_class.return_value
+        mock_detector.detect.return_value = GPUDevice(
+            name="NVIDIA GeForce RTX 3060",
+            vram_total_mb=12288,
+            vram_free_mb=11520,
+            cuda_version="12.1",
+            driver_version="525.60.11",
+            compute_capability="8.6",
+            device_id=0,
+        )
+
+        # Mock successful model loading
+        from kcuda_validate.models.llm_model import LLMModel
+
+        mock_loader = mock_loader_class.return_value
+        mock_loader.download_model.return_value = "/path/to/model.gguf"
+        mock_loader.load_model.return_value = LLMModel(
+            repo_id="Ttimofeyka/MistralRP-Noromaid-NSFW-Mistral-7B-GGUF",
+            filename="mistralrp-noromaid-nsfw-mistral-7b.Q4_K_M.gguf",
+            local_path="/path/to/model.gguf",
+            file_size_mb=4168,
+            parameter_count=7_240_000_000,
+            quantization_type="Q4_K_M",
+            context_length=8192,
+            vram_usage_mb=4832,
+            is_loaded=True,
+        )
+
+        # Mock successful inference
+        mock_inferencer = mock_inferencer_class.return_value
+        mock_inferencer.generate.return_value = InferenceResult.from_generation(
+            prompt="Hello, how are you?",
+            response="I'm doing well!",
+            tokens_generated=10,
+            time_to_first_token_sec=0.5,
+            total_time_sec=1.0,
+            gpu_utilization_percent=95.0,
+            vram_peak_mb=5000,
+        )
+
+        result = self.runner.invoke(cli, ["validate-all"])
+
+        # Should succeed with all steps passing
+        assert result.exit_code == 0
+
+        # Verify output contains all step results
+        output_lower = result.output.lower()
+        assert "gpu" in output_lower or "detect" in output_lower
+        assert "model" in output_lower or "load" in output_lower
+        assert "inference" in output_lower or "infer" in output_lower
+
+        # Verify summary footer per contract
+        assert "summary" in output_lower
+        assert "passed" in output_lower or "success" in output_lower
+
+    @patch("kcuda_validate.cli.validate_all.GPUDetector")
+    def test_validate_all_command_failure_detection_step(self, mock_detector_class):
+        """Test validate-all command handles detection failure."""
+        from kcuda_validate.services.gpu_detector import GPUDetectionError
+
+        # Mock GPU detection failure
+        mock_detector = mock_detector_class.return_value
+        mock_detector.detect.side_effect = GPUDetectionError("No GPU detected")
+
+        result = self.runner.invoke(cli, ["validate-all"])
+
+        # Should fail with exit code 1
+        assert result.exit_code == 1
+
+        # Should show failure in summary
+        output_lower = result.output.lower()
+        assert "failed" in output_lower or "error" in output_lower
+
+    @patch("kcuda_validate.cli.validate_all.GPUDetector")
+    @patch("kcuda_validate.cli.validate_all.ModelLoader")
+    def test_validate_all_command_failure_load_step(self, mock_loader_class, mock_detector_class):
+        """Test validate-all command handles model load failure."""
+        from kcuda_validate.models.llm_model import LLMModel
+
+        # Mock successful GPU detection
+        mock_detector = mock_detector_class.return_value
+        mock_detector.detect.return_value = GPUDevice(
+            name="NVIDIA GeForce RTX 3060",
+            vram_total_mb=12288,
+            vram_free_mb=11520,
+            cuda_version="12.1",
+            driver_version="525.60.11",
+            compute_capability="8.6",
+            device_id=0,
+        )
+
+        # Mock model loading failure
+        mock_loader = mock_loader_class.return_value
+        mock_loader.download_model.side_effect = RuntimeError("Download failed")
+
+        result = self.runner.invoke(cli, ["validate-all"])
+
+        # Should fail with exit code 1
+        assert result.exit_code == 1
+
+        # Should show which step failed
+        output_lower = result.output.lower()
+        assert "failed" in output_lower or "error" in output_lower
+
+    def test_validate_all_command_has_help_option(self):
+        """Test validate-all command has --help option."""
+        result = self.runner.invoke(cli, ["validate-all", "--help"])
+
+        assert result.exit_code == 0
+        assert "validate" in result.output.lower()
+
+    def test_validate_all_command_has_repo_id_option(self):
+        """Test validate-all command has --repo-id option."""
+        result = self.runner.invoke(cli, ["validate-all", "--help"])
+
+        assert result.exit_code == 0
+        assert "--repo-id" in result.output
+
+    def test_validate_all_command_has_filename_option(self):
+        """Test validate-all command has --filename option."""
+        result = self.runner.invoke(cli, ["validate-all", "--help"])
+
+        assert result.exit_code == 0
+        assert "--filename" in result.output
+
+    def test_validate_all_command_has_prompt_option(self):
+        """Test validate-all command has --prompt option."""
+        result = self.runner.invoke(cli, ["validate-all", "--help"])
+
+        assert result.exit_code == 0
+        assert "--prompt" in result.output
+
+    def test_validate_all_command_has_skip_on_error_option(self):
+        """Test validate-all command has --skip-on-error option."""
+        result = self.runner.invoke(cli, ["validate-all", "--help"])
+
+        assert result.exit_code == 0
+        assert "--skip-on-error" in result.output
+
+    @patch("kcuda_validate.cli.validate_all.GPUDetector")
+    @patch("kcuda_validate.cli.validate_all.ModelLoader")
+    @patch("kcuda_validate.cli.validate_all.Inferencer")
+    def test_validate_all_command_displays_summary_footer(
+        self, mock_inferencer_class, mock_loader_class, mock_detector_class
+    ):
+        """Test validate-all displays validation summary footer per contract."""
+        from kcuda_validate.models.inference_result import InferenceResult
+        from kcuda_validate.models.llm_model import LLMModel
+
+        # Mock all steps successful
+        mock_detector = mock_detector_class.return_value
+        mock_detector.detect.return_value = GPUDevice(
+            name="NVIDIA GeForce RTX 3060",
+            vram_total_mb=12288,
+            vram_free_mb=11520,
+            cuda_version="12.1",
+            driver_version="525.60.11",
+            compute_capability="8.6",
+            device_id=0,
+        )
+
+        mock_loader = mock_loader_class.return_value
+        mock_loader.download_model.return_value = "/path/to/model.gguf"
+        mock_loader.load_model.return_value = LLMModel(
+            repo_id="test/model",
+            filename="model.gguf",
+            local_path="/path/to/model.gguf",
+            file_size_mb=4000,
+            parameter_count=7_000_000_000,
+            quantization_type="Q4_K_M",
+            context_length=8192,
+            vram_usage_mb=4500,
+            is_loaded=True,
+        )
+
+        mock_inferencer = mock_inferencer_class.return_value
+        mock_inferencer.generate.return_value = InferenceResult.from_generation(
+            prompt="Test",
+            response="Response",
+            tokens_generated=10,
+            time_to_first_token_sec=0.5,
+            total_time_sec=1.0,
+            gpu_utilization_percent=95.0,
+            vram_peak_mb=5000,
+        )
+
+        result = self.runner.invoke(cli, ["validate-all"])
+
+        # Should display summary footer per cli.md contract
+        output_lower = result.output.lower()
+        assert "validation summary" in output_lower or "summary" in output_lower
+        assert "gpu detection" in output_lower or "detection" in output_lower
+        assert "model loading" in output_lower or "model" in output_lower
+        assert "inference" in output_lower or "infer" in output_lower
+        assert "overall" in output_lower or "status" in output_lower
+
+
 class TestGlobalOptions:
     """Test global CLI options work across all commands."""
 

@@ -41,7 +41,7 @@
 
 ### 1. Navigate to project
 ```bash
-cd /mnt/nvme/src/kcuda  # Or wherever it ends up after NVME shuffle
+cd /home/ken/src/kcuda
 ```
 
 ### 2. Verify environment
