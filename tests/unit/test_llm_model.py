@@ -16,7 +16,7 @@ class TestLLMModelValidation:
         """Test creating a valid LLMModel with all required attributes."""
         model = LLMModel(
             repo_id="Ttimofeyka/MistralRP-Noromaid-NSFW-Mistral-7B-GGUF",
-            filename="mistralrp-noromaid-nsfw-mistral-7b.Q4_K_M.gguf",
+            filename="MistralRP-Noromaid-NSFW-7B-Q4_0.gguf",
             local_path="/home/user/.cache/huggingface/hub/models/model.gguf",
             file_size_mb=4168,
             parameter_count=7_240_000_000,
@@ -27,7 +27,7 @@ class TestLLMModelValidation:
         )
 
         assert model.repo_id == "Ttimofeyka/MistralRP-Noromaid-NSFW-Mistral-7B-GGUF"
-        assert model.filename == "mistralrp-noromaid-nsfw-mistral-7b.Q4_K_M.gguf"
+        assert model.filename == "MistralRP-Noromaid-NSFW-7B-Q4_0.gguf"
         assert model.file_size_mb == 4168
         assert model.parameter_count == 7_240_000_000
         assert model.quantization_type == "Q4_K_M"

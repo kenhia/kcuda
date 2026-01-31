@@ -19,7 +19,7 @@ class TestModelLifecycleIntegration:
         """Setup test dependencies."""
         self.runner = CliRunner()
         self.default_repo = "Ttimofeyka/MistralRP-Noromaid-NSFW-Mistral-7B-GGUF"
-        self.default_filename = "mistralrp-noromaid-nsfw-mistral-7b.Q4_K_M.gguf"
+        self.default_filename = "MistralRP-Noromaid-NSFW-7B-Q4_0.gguf"
         self.default_load_args = [
             "load",
             "--repo-id",

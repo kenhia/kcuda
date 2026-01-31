@@ -1,6 +1,7 @@
 """LLMModel model representing a loaded GGUF model file."""
 
 from dataclasses import dataclass
+from typing import Any
 
 
 @dataclass(frozen=True)
@@ -18,6 +19,7 @@ class LLMModel:
         context_length: Maximum context window size in tokens
         vram_usage_mb: Measured GPU memory consumption after loading (0 if not loaded)
         is_loaded: Boolean indicating if model is currently loaded in GPU memory
+        instance: The actual Llama model instance (for inference)
     """
 
     repo_id: str
@@ -29,6 +31,7 @@ class LLMModel:
     context_length: int
     vram_usage_mb: int = 0
     is_loaded: bool = False
+    instance: Any = None
 
     def __post_init__(self) -> None:
         """Validate LLM model attributes."""

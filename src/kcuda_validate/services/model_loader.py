@@ -154,6 +154,7 @@ class ModelLoader:
             context_length=context_length,
             vram_usage_mb=vram_usage_mb,
             is_loaded=True,
+            instance=self._loaded_model,  # Store the actual Llama instance
         )
 
         return llm_model

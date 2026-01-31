@@ -268,7 +268,7 @@ class TestValidateAllCommand:
         mock_loader.download_model.return_value = "/path/to/model.gguf"
         mock_loader.load_model.return_value = LLMModel(
             repo_id="Ttimofeyka/MistralRP-Noromaid-NSFW-Mistral-7B-GGUF",
-            filename="mistralrp-noromaid-nsfw-mistral-7b.Q4_K_M.gguf",
+            filename="MistralRP-Noromaid-NSFW-7B-Q4_0.gguf",
             local_path="/path/to/model.gguf",
             file_size_mb=4168,
             parameter_count=7_240_000_000,

@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 # Default model configuration
 DEFAULT_REPO_ID = "Ttimofeyka/MistralRP-Noromaid-NSFW-Mistral-7B-GGUF"
-DEFAULT_FILENAME = "mistralrp-noromaid-nsfw-mistral-7b.Q4_K_M.gguf"
+DEFAULT_FILENAME = "MistralRP-Noromaid-NSFW-7B-Q4_0.gguf"
 DEFAULT_PROMPT = "Hello, how are you?"
 
 
@@ -126,7 +126,12 @@ def validate_all(repo_id: str, filename: str, prompt: str, skip_on_error: bool):
 
         # Load model into GPU memory
         click.echo("\n→ Loading model into GPU memory...")
-        model = loader.load_model(model_path, use_gpu=True)
+        model = loader.load_model(
+            local_path=model_path,
+            repo_id=repo_id,
+            filename=filename,
+            use_gpu=True,
+        )
 
         # Display model info
         from kcuda_validate.lib.formatters import format_model_info
@@ -161,7 +166,7 @@ def validate_all(repo_id: str, filename: str, prompt: str, skip_on_error: bool):
         click.echo("\n→ Running inference...")
         click.echo(f'  Prompt: "{prompt}"')
 
-        inferencer = Inferencer(model_path=model_path, use_gpu=True)
+        inferencer = Inferencer(model=model.instance, collect_metrics=True)
         result = inferencer.generate(
             prompt=prompt,
             max_tokens=50,

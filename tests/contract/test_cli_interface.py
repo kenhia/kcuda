@@ -198,7 +198,7 @@ class TestLoadCommandContract:
         assert "model" in output_lower and "loaded" in output_lower
         assert "passed" in output_lower
         # Should show model metadata
-        assert "q4_k_m" in output_lower or "quantization" in output_lower
+        assert "q4_0" in output_lower or "quantization" in output_lower
         assert "vram" in output_lower
 
     @patch("kcuda_validate.cli.load.ModelLoader")
@@ -219,7 +219,7 @@ class TestLoadCommandContract:
                 "--repo-id",
                 "Ttimofeyka/MistralRP-Noromaid-NSFW-Mistral-7B-GGUF",
                 "--filename",
-                "mistralrp-noromaid-nsfw-mistral-7b.Q4_K_M.gguf",
+                "MistralRP-Noromaid-NSFW-7B-Q4_0.gguf",
             ],
         )
 
@@ -243,7 +243,7 @@ class TestLoadCommandContract:
                 "--repo-id",
                 "Ttimofeyka/MistralRP-Noromaid-NSFW-Mistral-7B-GGUF",
                 "--filename",
-                "mistralrp-noromaid-nsfw-mistral-7b.Q4_K_M.gguf",
+                "MistralRP-Noromaid-NSFW-7B-Q4_0.gguf",
             ],
         )
 
@@ -439,11 +439,11 @@ class TestValidateAllCommandContract:
         mock_loader.download_model.return_value = "/path/to/model.gguf"
         mock_loader.load_model.return_value = LLMModel(
             repo_id="Ttimofeyka/MistralRP-Noromaid-NSFW-Mistral-7B-GGUF",
-            filename="mistralrp-noromaid-nsfw-mistral-7b.Q4_K_M.gguf",
+            filename="MistralRP-Noromaid-NSFW-7B-Q4_0.gguf",
             local_path="/path/to/model.gguf",
             file_size_mb=4168,
             parameter_count=7_240_000_000,
-            quantization_type="Q4_K_M",
+            quantization_type="Q4_0",
             context_length=8192,
             vram_usage_mb=4832,
             is_loaded=True,

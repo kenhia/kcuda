@@ -20,7 +20,7 @@ class TestModelLoader:
     def setup_method(self):
         """Setup test dependencies."""
         self.default_repo = "Ttimofeyka/MistralRP-Noromaid-NSFW-Mistral-7B-GGUF"
-        self.default_filename = "mistralrp-noromaid-nsfw-mistral-7b.Q4_K_M.gguf"
+        self.default_filename = "MistralRP-Noromaid-NSFW-7B-Q4_0.gguf"
 
     @patch("kcuda_validate.services.model_loader.hf_hub_download")
     def test_download_model_success(self, mock_download):
@@ -83,7 +83,7 @@ class TestModelLoader:
         assert llm_model.filename == self.default_filename
         assert llm_model.local_path == model_path
         assert llm_model.file_size_mb == 4168
-        assert llm_model.quantization_type == "Q4_K_M"
+        assert llm_model.quantization_type == "Q4_0"  # Extracted from default_filename
         assert llm_model.context_length == 8192
         assert llm_model.is_loaded is True
         assert llm_model.vram_usage_mb > 0
@@ -174,7 +174,8 @@ class TestModelLoader:
             ("model.Q5_K_M.gguf", "Q5_K_M"),
             ("model.Q8_0.gguf", "Q8_0"),
             ("model.F16.gguf", "F16"),
-            ("mistralrp-noromaid-nsfw-mistral-7b.Q4_K_M.gguf", "Q4_K_M"),
+            ("MistralRP-Noromaid-NSFW-7B-Q4_0.gguf", "Q4_0"),
+            ("model-Q4_K_M.gguf", "Q4_K_M"),
         ]
 
         for filename, expected_quant in test_cases:
