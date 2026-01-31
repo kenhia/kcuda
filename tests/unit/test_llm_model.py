@@ -5,6 +5,7 @@ as defined in data-model.md.
 """
 
 import pytest
+
 from kcuda_validate.models.llm_model import LLMModel
 
 
@@ -82,7 +83,8 @@ class TestLLMModelValidation:
     def test_vram_usage_valid_when_loaded(self):
         """Test that vram_usage_mb must be > 0 when is_loaded=True."""
         with pytest.raises(
-            ValueError, match=r"[Vv][Rr][Aa][Mm].*positive.*loaded|loaded.*[Vv][Rr][Aa][Mm].*positive"
+            ValueError,
+            match=r"[Vv][Rr][Aa][Mm].*positive.*loaded|loaded.*[Vv][Rr][Aa][Mm].*positive",
         ):
             LLMModel(
                 repo_id="test/repo",

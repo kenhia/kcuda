@@ -1,7 +1,6 @@
 """GPUDevice model representing NVIDIA GPU hardware."""
 
 from dataclasses import dataclass
-from typing import Optional
 
 
 @dataclass(frozen=True)
@@ -31,9 +30,7 @@ class GPUDevice:
         """Validate GPU device attributes."""
         # Validate VRAM minimum
         if self.vram_total_mb < 4096:
-            raise ValueError(
-                f"Insufficient VRAM: {self.vram_total_mb}MB < 4096MB minimum required"
-            )
+            raise ValueError(f"Insufficient VRAM: {self.vram_total_mb}MB < 4096MB minimum required")
 
         # Validate free VRAM doesn't exceed total
         if self.vram_free_mb > self.vram_total_mb:
@@ -43,29 +40,29 @@ class GPUDevice:
 
         # Validate device ID is non-negative
         if self.device_id < 0:
-            raise ValueError(
-                f"Device ID must be non-negative, got {self.device_id}"
-            )
+            raise ValueError(f"Device ID must be non-negative, got {self.device_id}")
 
         # Parse and validate compute capability
         try:
             major, minor = map(int, self.compute_capability.split("."))
             if major < 6:
                 raise ValueError(
-                    f"Compute capability {self.compute_capability} < 6.0 "
-                    "(Pascal or newer required)"
-                )
+                    f"Compute capability {self.compute_capability} < 6.0 (Pascal or newer required)"
+                ) from None
         except ValueError:
             # Re-raise with proper message
             if major < 6:
                 raise ValueError(
-                    f"Compute capability {self.compute_capability} < 6.0 "
-                    "(Pascal or newer required)"
-                )
+                    f"Compute capability {self.compute_capability} < 6.0 (Pascal or newer required)"
+                ) from None
             else:
-                raise ValueError(f"Invalid compute capability format: {self.compute_capability}")
+                raise ValueError(
+                    f"Invalid compute capability format: {self.compute_capability}"
+                ) from None
         except AttributeError as e:
-            raise ValueError(f"Invalid compute capability format: {self.compute_capability}") from e
+            raise ValueError(
+                f"Invalid compute capability format: {self.compute_capability}"
+            ) from e
 
         # Validate CUDA version is present
         if not self.cuda_version or not self.cuda_version.strip():

@@ -179,7 +179,16 @@ class TestLoadCommandContract:
             is_loaded=True,
         )
 
-        result = self.runner.invoke(cli, ["load"])
+        result = self.runner.invoke(
+            cli,
+            [
+                "load",
+                "--repo-id",
+                "Ttimofeyka/MistralRP-Noromaid-NSFW-Mistral-7B-GGUF",
+                "--filename",
+                "mistralrp-noromaid-nsfw-mistral-7b.Q4_K_M.gguf",
+            ],
+        )
 
         # Should succeed
         assert result.exit_code == 0
@@ -203,7 +212,16 @@ class TestLoadCommandContract:
             "Insufficient VRAM: need 5000MB, have 2000MB"
         )
 
-        result = self.runner.invoke(cli, ["load"])
+        result = self.runner.invoke(
+            cli,
+            [
+                "load",
+                "--repo-id",
+                "Ttimofeyka/MistralRP-Noromaid-NSFW-Mistral-7B-GGUF",
+                "--filename",
+                "mistralrp-noromaid-nsfw-mistral-7b.Q4_K_M.gguf",
+            ],
+        )
 
         # Exit code 2 for load failures
         assert result.exit_code == 2
@@ -218,7 +236,16 @@ class TestLoadCommandContract:
         mock_loader = mock_loader_class.return_value
         mock_loader.download_model.side_effect = ModelLoadError("Network error")
 
-        result = self.runner.invoke(cli, ["load"])
+        result = self.runner.invoke(
+            cli,
+            [
+                "load",
+                "--repo-id",
+                "Ttimofeyka/MistralRP-Noromaid-NSFW-Mistral-7B-GGUF",
+                "--filename",
+                "mistralrp-noromaid-nsfw-mistral-7b.Q4_K_M.gguf",
+            ],
+        )
 
         # Exit code 1 for download failures
         assert result.exit_code == 1

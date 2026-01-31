@@ -3,15 +3,12 @@
 These tests verify the full model download → load pipeline.
 """
 
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
 from click.testing import CliRunner
 
 from kcuda_validate.__main__ import cli
-from kcuda_validate.models.llm_model import LLMModel
-from kcuda_validate.services.model_loader import ModelLoadError, ModelLoader
 
 
 @pytest.mark.integration
@@ -23,6 +20,13 @@ class TestModelLifecycleIntegration:
         self.runner = CliRunner()
         self.default_repo = "Ttimofeyka/MistralRP-Noromaid-NSFW-Mistral-7B-GGUF"
         self.default_filename = "mistralrp-noromaid-nsfw-mistral-7b.Q4_K_M.gguf"
+        self.default_load_args = [
+            "load",
+            "--repo-id",
+            self.default_repo,
+            "--filename",
+            self.default_filename,
+        ]
 
     @patch("kcuda_validate.services.model_loader.hf_hub_download")
     @patch("kcuda_validate.services.model_loader.Path.stat")
@@ -56,7 +60,17 @@ class TestModelLifecycleIntegration:
         mock_llama_class.return_value = mock_llama_instance
 
         # Execute through CLI
-        result = self.runner.invoke(cli, ["load"])
+        result = self.runner.invoke(cli, self.default_load_args)
+
+        # Debug output
+        if result.exit_code != 0:
+            print(f"\nExit code: {result.exit_code}")
+            print(f"Output: {result.output}")
+            if result.exception:
+                print(f"Exception: {result.exception}")
+                import traceback
+
+                traceback.print_exception(type(result.exception), result.exception, result.exception.__traceback__)
 
         # Should succeed
         assert result.exit_code == 0
@@ -67,7 +81,7 @@ class TestModelLifecycleIntegration:
         """Test graceful handling of download failures."""
         mock_download.side_effect = Exception("Network timeout")
 
-        result = self.runner.invoke(cli, ["load"])
+        result = self.runner.invoke(cli, self.default_load_args)
 
         # Should fail with exit code 1
         assert result.exit_code == 1
@@ -86,7 +100,7 @@ class TestModelLifecycleIntegration:
             12000 * 1024 * 1024,
         )
 
-        result = self.runner.invoke(cli, ["load"])
+        result = self.runner.invoke(cli, self.default_load_args)
 
         # Should fail with exit code 2
         assert result.exit_code == 2
@@ -124,7 +138,7 @@ class TestModelLifecycleIntegration:
         mock_llama_class.return_value = mock_llama_instance
 
         # Execute with custom options
-        result = self.runner.invoke(
+        self.runner.invoke(
             cli, ["load", "--repo-id", custom_repo, "--filename", custom_filename]
         )
 
@@ -138,9 +152,7 @@ class TestModelLifecycleIntegration:
     @patch("kcuda_validate.services.model_loader.Path.stat")
     @patch("kcuda_validate.services.model_loader.Path.exists")
     @patch("kcuda_validate.services.model_loader.Llama")
-    def test_skip_download_option(
-        self, mock_llama_class, mock_exists, mock_stat, mock_download
-    ):
+    def test_skip_download_option(self, mock_llama_class, mock_exists, mock_stat, mock_download):
         """Test --skip-download option skips download step."""
         # Mock file already exists locally
         mock_exists.return_value = True
@@ -152,7 +164,17 @@ class TestModelLifecycleIntegration:
         mock_llama_instance.n_ctx.return_value = 8192
         mock_llama_class.return_value = mock_llama_instance
 
-        result = self.runner.invoke(cli, ["load", "--skip-download"])
+        self.runner.invoke(
+            cli,
+            [
+                "load",
+                "--repo-id",
+                self.default_repo,
+                "--filename",
+                self.default_filename,
+                "--skip-download",
+            ],
+        )
 
         # Download should not be called
         mock_download.assert_not_called()
@@ -161,9 +183,7 @@ class TestModelLifecycleIntegration:
     @patch("kcuda_validate.services.model_loader.Path.stat")
     @patch("kcuda_validate.services.model_loader.Path.exists")
     @patch("kcuda_validate.services.model_loader.Llama")
-    def test_no_gpu_option_cpu_mode(
-        self, mock_llama_class, mock_exists, mock_stat, mock_download
-    ):
+    def test_no_gpu_option_cpu_mode(self, mock_llama_class, mock_exists, mock_stat, mock_download):
         """Test --no-gpu option loads model in CPU mode."""
         mock_path = "/path/to/model.gguf"
         mock_download.return_value = mock_path
@@ -177,7 +197,17 @@ class TestModelLifecycleIntegration:
         mock_llama_instance.n_ctx.return_value = 8192
         mock_llama_class.return_value = mock_llama_instance
 
-        result = self.runner.invoke(cli, ["load", "--no-gpu"])
+        self.runner.invoke(
+            cli,
+            [
+                "load",
+                "--repo-id",
+                self.default_repo,
+                "--filename",
+                self.default_filename,
+                "--no-gpu",
+            ],
+        )
 
         # Verify Llama was called with n_gpu_layers=0 for CPU mode
         mock_llama_class.assert_called_once()
@@ -187,9 +217,7 @@ class TestModelLifecycleIntegration:
     @patch("kcuda_validate.services.model_loader.hf_hub_download")
     @patch("kcuda_validate.services.model_loader.Path.exists")
     @patch("kcuda_validate.services.model_loader.Llama")
-    def test_invalid_gguf_file_handling(
-        self, mock_llama_class, mock_exists, mock_download
-    ):
+    def test_invalid_gguf_file_handling(self, mock_llama_class, mock_exists, mock_download):
         """Test handling of invalid/corrupt GGUF files."""
         mock_path = "/path/to/corrupt.gguf"
         mock_download.return_value = mock_path
@@ -198,10 +226,10 @@ class TestModelLifecycleIntegration:
         # Llama raises error for invalid file
         mock_llama_class.side_effect = ValueError("Invalid GGUF format")
 
-        result = self.runner.invoke(cli, ["load"])
+        result = self.runner.invoke(cli, self.default_load_args)
 
-        # Should fail with exit code 3 for validation errors
-        assert result.exit_code == 3
+        # Should fail with exit code 2 for load errors (corrupt file)
+        assert result.exit_code == 2
         assert "invalid" in result.output.lower() or "corrupt" in result.output.lower()
 
     @patch("kcuda_validate.services.model_loader.hf_hub_download")
@@ -230,7 +258,7 @@ class TestModelLifecycleIntegration:
         mock_llama_instance.n_ctx.return_value = 8192
         mock_llama_class.return_value = mock_llama_instance
 
-        result = self.runner.invoke(cli, ["load"])
+        result = self.runner.invoke(cli, self.default_load_args)
 
         output_lower = result.output.lower()
         # Should display key metadata

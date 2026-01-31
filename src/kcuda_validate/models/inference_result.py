@@ -1,7 +1,6 @@
 """InferenceResult model representing text generation outcomes."""
 
 from dataclasses import dataclass
-from typing import Optional
 
 
 @dataclass
@@ -28,10 +27,10 @@ class InferenceResult:
     time_to_first_token_sec: float = 0.0
     total_time_sec: float = 0.0
     tokens_per_second: float = 0.0
-    gpu_utilization_percent: Optional[float] = None
-    vram_peak_mb: Optional[int] = None
+    gpu_utilization_percent: float | None = None
+    vram_peak_mb: int | None = None
     success: bool = False
-    error_message: Optional[str] = None
+    error_message: str | None = None
 
     def __post_init__(self) -> None:
         """Validate inference result attributes."""
@@ -63,8 +62,8 @@ class InferenceResult:
         tokens_generated: int,
         time_to_first_token_sec: float,
         total_time_sec: float,
-        gpu_utilization_percent: Optional[float] = None,
-        vram_peak_mb: Optional[int] = None,
+        gpu_utilization_percent: float | None = None,
+        vram_peak_mb: int | None = None,
     ) -> "InferenceResult":
         """
         Create successful InferenceResult from generation data.

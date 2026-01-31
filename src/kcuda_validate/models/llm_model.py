@@ -1,7 +1,6 @@
 """LLMModel model representing a loaded GGUF model file."""
 
 from dataclasses import dataclass
-from typing import Optional
 
 
 @dataclass(frozen=True)
@@ -43,15 +42,11 @@ class LLMModel:
 
         # Validate file size
         if self.file_size_mb <= 0:
-            raise ValueError(
-                f"File size must be positive, got {self.file_size_mb}MB"
-            )
+            raise ValueError(f"File size must be positive, got {self.file_size_mb}MB")
 
         # Validate context length
         if self.context_length <= 0:
-            raise ValueError(
-                f"Context length must be positive, got {self.context_length}"
-            )
+            raise ValueError(f"Context length must be positive, got {self.context_length}")
 
         # Validate quantization type
         if not self.quantization_type or not self.quantization_type.strip():
@@ -59,6 +54,4 @@ class LLMModel:
 
         # Validate VRAM usage when loaded
         if self.is_loaded and self.vram_usage_mb <= 0:
-            raise ValueError(
-                "VRAM usage must be positive when model is loaded"
-            )
+            raise ValueError("VRAM usage must be positive when model is loaded")

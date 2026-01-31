@@ -4,14 +4,13 @@ Tests model download and loading with mocked dependencies
 (huggingface_hub and llama-cpp-python).
 """
 
-from pathlib import Path
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
-from kcuda_validate.models.llm_model import LLMModel
+
 from kcuda_validate.services.model_loader import (
-    ModelLoadError,
     ModelLoader,
+    ModelLoadError,
 )
 
 
@@ -54,9 +53,7 @@ class TestModelLoader:
         mock_download.side_effect = Exception("404")
 
         loader = ModelLoader()
-        with pytest.raises(
-            ModelLoadError, match="[Ff]ile not found|404"
-        ):
+        with pytest.raises(ModelLoadError, match="[Ff]ile not found|404"):
             loader.download_model(self.default_repo, "nonexistent.gguf")
 
     @patch("kcuda_validate.services.model_loader.Path.stat")
@@ -98,15 +95,17 @@ class TestModelLoader:
         assert call_kwargs["n_gpu_layers"] == -1  # All layers on GPU
         assert call_kwargs["verbose"] is False
 
+    @patch("kcuda_validate.services.model_loader.Path.stat")
+    @patch("kcuda_validate.services.model_loader.Path.exists")
     @patch("kcuda_validate.services.model_loader.Llama")
-    def test_load_model_insufficient_vram(self, mock_llama_class):
+    def test_load_model_insufficient_vram(self, mock_llama_class, mock_exists, mock_stat):
         """Test model loading failure due to insufficient VRAM."""
+        mock_exists.return_value = True
+        mock_stat.return_value.st_size = 4_000_000_000  # 4GB
         mock_llama_class.side_effect = RuntimeError("CUDA out of memory")
 
         loader = ModelLoader()
-        with pytest.raises(
-            ModelLoadError, match="[Ii]nsufficient.*[Vv][Rr][Aa][Mm]|memory"
-        ):
+        with pytest.raises(ModelLoadError, match="[Ii]nsufficient.*[Vv][Rr][Aa][Mm]|memory"):
             loader.load_model(
                 local_path="/path/to/model.gguf",
                 repo_id=self.default_repo,
@@ -126,15 +125,15 @@ class TestModelLoader:
                 filename=self.default_filename,
             )
 
+    @patch("kcuda_validate.services.model_loader.Path.exists")
     @patch("kcuda_validate.services.model_loader.Path.stat")
-    def test_load_model_corrupt_file(self, mock_stat):
+    def test_load_model_corrupt_file(self, mock_stat, mock_exists):
         """Test model loading with corrupt/invalid GGUF file."""
+        mock_exists.return_value = True
         mock_stat.side_effect = Exception("Invalid file format")
 
         loader = ModelLoader()
-        with pytest.raises(
-            ModelLoadError, match="[Cc]orrupt|[Ii]nvalid"
-        ):
+        with pytest.raises(ModelLoadError, match="[Cc]orrupt|[Ii]nvalid"):
             loader.load_model(
                 local_path="/path/to/corrupt.gguf",
                 repo_id=self.default_repo,
@@ -154,7 +153,7 @@ class TestModelLoader:
         mock_llama_class.return_value = mock_llama_instance
 
         loader = ModelLoader()
-        llm_model = loader.load_model(
+        loader.load_model(
             local_path="/path/to/model.gguf",
             repo_id=self.default_repo,
             filename=self.default_filename,
@@ -193,7 +192,10 @@ class TestModelLoader:
     def test_check_vram_availability_sufficient(self, mock_cuda):
         """Test VRAM availability check with sufficient memory."""
         mock_cuda.is_available.return_value = True
-        mock_cuda.mem_get_info.return_value = (8000 * 1024 * 1024, 12000 * 1024 * 1024)  # 8GB free, 12GB total
+        mock_cuda.mem_get_info.return_value = (
+            8000 * 1024 * 1024,
+            12000 * 1024 * 1024,
+        )  # 8GB free, 12GB total
 
         loader = ModelLoader()
         # Should not raise - 5GB required, 8GB available
@@ -203,12 +205,13 @@ class TestModelLoader:
     def test_check_vram_availability_insufficient(self, mock_cuda):
         """Test VRAM availability check with insufficient memory."""
         mock_cuda.is_available.return_value = True
-        mock_cuda.mem_get_info.return_value = (2000 * 1024 * 1024, 12000 * 1024 * 1024)  # 2GB free, 12GB total
+        mock_cuda.mem_get_info.return_value = (
+            2000 * 1024 * 1024,
+            12000 * 1024 * 1024,
+        )  # 2GB free, 12GB total
 
         loader = ModelLoader()
-        with pytest.raises(
-            ModelLoadError, match="[Ii]nsufficient.*[Vv][Rr][Aa][Mm]"
-        ):
+        with pytest.raises(ModelLoadError, match="[Ii]nsufficient.*[Vv][Rr][Aa][Mm]"):
             loader.check_vram_availability(required_mb=5000)  # Need 5GB, only 2GB free
 
     @patch("kcuda_validate.services.model_loader.torch.cuda")
