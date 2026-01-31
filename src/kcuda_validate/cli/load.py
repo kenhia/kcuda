@@ -18,13 +18,13 @@ console = Console()
 @click.command(name="load")
 @click.option(
     "--repo-id",
-    required=True,
-    help="Hugging Face repository ID (e.g., 'TheBloke/Mistral-7B-Instruct-v0.2-GGUF')",
+    default="Ttimofeyka/MistralRP-Noromaid-NSFW-Mistral-7B-GGUF",
+    help="Hugging Face repository ID [default: Ttimofeyka/MistralRP-Noromaid-NSFW-Mistral-7B-GGUF]",
 )
 @click.option(
     "--filename",
-    required=True,
-    help="Model filename within repository (e.g., 'mistral-7b-instruct-v0.2.Q4_K_M.gguf')",
+    default="mistralrp-noromaid-nsfw-mistral-7b.Q4_K_M.gguf",
+    help="Model filename within repository [default: mistralrp-noromaid-nsfw-mistral-7b.Q4_K_M.gguf]",
 )
 @click.option(
     "--skip-download",

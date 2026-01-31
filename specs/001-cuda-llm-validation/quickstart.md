@@ -52,40 +52,118 @@ Expected output showing version and dependencies.
 
 ## Quick Validation
 
-### Run Full Validation Pipeline
+Let's validate your setup step by step.
 
-The fastest way to validate your setup:
+### Step 1: Detect GPU
+
+First, verify CUDA is available and your GPU is detected:
+
+```bash
+uv run kcuda-validate detect
+```
+
+**Expected output:**
+```
+GPU Detection Results
+
+CUDA Status
+  CUDA Available: ✓ Yes
+  CUDA Version: 12.1
+
+GPU Information
+  Name: NVIDIA GeForce RTX 3060
+  VRAM Total: 12,288 MB
+  VRAM Free: 11,456 MB
+  Compute Capability: 8.6
+
+GPU Detection - PASSED
+```
+
+**If this fails**, check your NVIDIA driver and WSL2 GPU access with `nvidia-smi`.
+
+### Step 2: Load Model
+
+Download and load a model into GPU memory:
+
+```bash
+uv run kcuda-validate load
+```
+
+This uses the default model (Mistral 7B Q4_K_M). **First run downloads ~4GB** which may take 5-30 minutes depending on your connection.
+
+**Expected output:**
+```
+Downloading model from Hugging Face...
+Repository: Ttimofeyka/MistralRP-Noromaid-NSFW-Mistral-7B-GGUF
+File: mistralrp-noromaid-nsfw-mistral-7b.Q4_K_M.gguf
+✓ Downloaded to: ~/.cache/huggingface/hub/...
+
+Loading model into memory...
+✓ Loading...
+
+Model Information:
+  Repository: Ttimofeyka/MistralRP-Noromaid-NSFW-Mistral-7B-GGUF
+  Filename: mistralrp-noromaid-nsfw-mistral-7b.Q4_K_M.gguf
+  File Size: 4,168 MB
+  Parameters: 7.95B
+  Quantization: Q4_K_M
+  Context Length: 8,192 tokens
+  VRAM Usage: 4,793 MB
+  Status: Loaded
+
+✓ Model loaded successfully - PASSED!
+```
+
+**Subsequent runs** skip the download and load in ~10 seconds.
+
+### Step 3: Run Inference
+
+Test that the model can generate text:
+
+```bash
+uv run kcuda-validate infer "Write a haiku about coding"
+```
+
+**Expected output:**
+```
+Inference Test
+
+Input: Write a haiku about coding
+
+Generated Response:
+  Code flows like water,
+  Bugs emerge from shadows deep,
+  Debug lights the way.
+
+Performance Metrics:
+  Tokens Generated: 23
+  Time Taken: 1.45s
+  Tokens/Second: 15.86
+  First Token Latency: 0.23s
+
+Inference Test - PASSED
+```
+
+### Step 4: Full Validation (Optional)
+
+Once you've verified each step works, you can use the all-in-one command:
 
 ```bash
 uv run kcuda-validate validate-all
 ```
 
-This will:
-1. ✓ Detect your NVIDIA GPU
-2. ✓ Download Mistral 7B GGUF model (~4GB, first run only)
-3. ✓ Load model into GPU memory
-4. ✓ Run inference test
-5. ✓ Display performance metrics
-
-**First run**: 5-30 minutes (model download)  
-**Subsequent runs**: <30 seconds
-
-### Expected Output
+This runs all three steps automatically and shows a summary:
 
 ```
 → Step 1/3: GPU Detection
 ✓ CUDA Available: Yes
 ✓ GPU Detected: NVIDIA GeForce RTX 3060
-  - VRAM Total: 12288 MB
-  - CUDA Version: 12.1
   
 → Step 2/3: Model Loading
-→ Downloading model (first run only)...
-  [████████████████████████████] 4168 MB | 12.3 MB/s
-✓ Model loaded: 4832 MB VRAM used
+✓ Model loaded: 4,793 MB VRAM used
 
 → Step 3/3: Inference Test
-✓ Inference completed: 13.4 tokens/second
+✓ Inference completed: 15.86 tokens/second
 
 ═══════════════════════════════════════════
 Validation Summary: SUCCESS
