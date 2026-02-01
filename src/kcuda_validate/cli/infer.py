@@ -4,6 +4,7 @@ import click
 
 from kcuda_validate.lib.logger import setup_logger
 from kcuda_validate.services.inferencer import InferenceError, Inferencer
+from kcuda_validate.services.model_loader import ModelLoader, ModelLoadError
 
 # Will be accessed from module state (loaded by load command)
 _loaded_model = None
@@ -84,8 +85,6 @@ def infer(
                 filename = "MistralRP-Noromaid-NSFW-7B-Q4_0.gguf"
 
             # Load model using ModelLoader
-            from kcuda_validate.services.model_loader import ModelLoader, ModelLoadError
-
             try:
                 loader = ModelLoader()
 

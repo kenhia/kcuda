@@ -91,7 +91,9 @@ class TestFullPipeline:
 
     @patch("kcuda_validate.cli.infer.ModelLoader")
     @patch("kcuda_validate.cli.infer.Inferencer")
-    def test_inference_performance_metrics_collection(self, mock_inferencer_class, mock_loader_class):
+    def test_inference_performance_metrics_collection(
+        self, mock_inferencer_class, mock_loader_class
+    ):
         """Test that inference collects and displays performance metrics."""
         from kcuda_validate.models.inference_result import InferenceResult
         from kcuda_validate.models.llm_model import LLMModel
@@ -99,13 +101,15 @@ class TestFullPipeline:
         # Mock model loader
         mock_loader = mock_loader_class.return_value
         mock_loader.load_model.return_value = LLMModel(
-            model_path="/path/to/model.gguf",
+            local_path="/path/to/model.gguf",
             repo_id="test/repo",
             filename="model.gguf",
             file_size_mb=4000,
+            parameter_count=7_000_000_000,
+            quantization_type="Q4_0",
             context_length=8192,
-            loaded=True,
-            quantization="Q4_0",
+            vram_usage_mb=5000,
+            is_loaded=True,
         )
 
         mock_inferencer = mock_inferencer_class.return_value
@@ -228,13 +232,15 @@ class TestFullPipeline:
         # Mock model loader
         mock_loader = mock_loader_class.return_value
         mock_loader.load_model.return_value = LLMModel(
-            model_path="/path/to/model.gguf",
+            local_path="/path/to/model.gguf",
             repo_id="test/repo",
             filename="model.gguf",
             file_size_mb=4000,
+            parameter_count=7_000_000_000,
+            quantization_type="Q4_0",
             context_length=8192,
-            loaded=True,
-            quantization="Q4_0",
+            vram_usage_mb=5000,
+            is_loaded=True,
         )
 
         long_response = (
