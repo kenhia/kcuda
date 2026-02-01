@@ -29,13 +29,13 @@ jobs:
       - name: Install dependencies
         run: |
           # Install CPU-only torch (GitHub Actions runners don't have CUDA GPUs)
-          uv pip install torch --index-url https://download.pytorch.org/whl/cpu
+          uv pip install --system torch --index-url https://download.pytorch.org/whl/cpu
           # Install remaining dependencies except llama-cpp-python (requires CUDA build)
-          uv pip install nvidia-ml-py huggingface-hub click rich
+          uv pip install --system nvidia-ml-py huggingface-hub click rich
           # Install test dependencies
-          uv pip install pytest pytest-cov pytest-mock ruff
+          uv pip install --system pytest pytest-cov pytest-mock ruff
           # Install package in editable mode without dependencies (already installed above)
-          uv pip install -e . --no-deps
+          uv pip install --system -e . --no-deps
       
       - name: Lint with ruff
         run: |
