@@ -1,6 +1,6 @@
 [project]
 name = "kcuda-validate"
-version = "0.1.1"
+version = "0.1.2"
 description = "CUDA LLM Hardware Validation Tool for WSL2"
 readme = "README.md"
 requires-python = ">=3.11"
