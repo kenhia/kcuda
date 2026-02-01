@@ -39,13 +39,13 @@ jobs:
       
       - name: Lint with ruff
         run: |
-          uv run ruff check .
-          uv run ruff format --check .
+          ruff check .
+          ruff format --check .
       
       - name: Run tests
         run: |
           # Run all unit and integration tests (they use mocks, don't need actual GPU/llama)
-          uv run pytest tests/ -v --cov=src/kcuda_validate --cov-report=xml -k "not test_detection_on_real_hardware"
+          pytest tests/ -v --cov=src/kcuda_validate --cov-report=xml -k "not test_detection_on_real_hardware"
       
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
@@ -75,5 +75,5 @@ jobs:
       
       - name: Check package metadata
         run: |
-          uv run pip install twine
-          uv run twine check dist/*
+          pip install twine
+          twine check dist/*
