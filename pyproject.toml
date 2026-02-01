@@ -6,16 +6,20 @@ readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
 authors = [
-    { name = "kcuda", email = "kcuda@example.com" }
+    { name = "Ken Hia", email = "ken@example.com" }
 ]
-keywords = ["cuda", "llm", "validation", "wsl2", "gpu", "nvidia"]
+keywords = ["cuda", "llm", "validation", "wsl2", "gpu", "nvidia", "inference", "gguf"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
     "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: System :: Hardware",
 ]
 
 dependencies = [
@@ -25,6 +29,14 @@ dependencies = [
     "huggingface-hub>=0.19.0",
     "click>=8.1.0",
     "rich>=13.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=9.0.2",
+    "pytest-cov>=7.0.0",
+    "pytest-mock>=3.15.1",
+    "ruff>=0.14.14",
 ]
 
 [dependency-groups]
@@ -39,13 +51,32 @@ dev = [
 kcuda-validate = "kcuda_validate.__main__:main"
 
 [project.urls]
-Homepage = "https://github.com/kcuda/kcuda-validate"
-Documentation = "https://github.com/kcuda/kcuda-validate/blob/main/specs/001-cuda-llm-validation/quickstart.md"
-Repository = "https://github.com/kcuda/kcuda-validate"
+Homepage = "https://github.com/kenhia/kcuda"
+Documentation = "https://github.com/kenhia/kcuda/blob/main/specs/001-cuda-llm-validation/quickstart.md"
+Repository = "https://github.com/kenhia/kcuda"
+"Bug Tracker" = "https://github.com/kenhia/kcuda/issues"
+Changelog = "https://github.com/kenhia/kcuda/releases"
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.sdist]
+exclude = [
+    "/.github",
+    "/.specify",
+    "/specs",
+    "/tests",
+    "/htmlcov",
+    "/models",
+    ".gitignore",
+    ".ruff_cache",
+    "SESSION_HANDOFF.md",
+    "PUBLISHING.md",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/kcuda_validate"]
 
 [tool.ruff]
 line-length = 100
