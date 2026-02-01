@@ -73,3 +73,6 @@ logs/
 # Test artifacts
 test-workspace.txt
 temp_*.txt
+
+# Other
+/.temp/
