@@ -85,39 +85,29 @@ def cli(
 ) -> None:
     """CUDA LLM Hardware Validation Tool for WSL2."""
     if version:
+        from importlib.metadata import PackageNotFoundError
+        from importlib.metadata import version as get_version
+
         # Show package version and key dependency versions
         click.echo(f"kcuda-validate version {__version__}")
         click.echo("")
         click.echo("Dependencies:")
 
-        # Import and show dependency versions
-        try:
-            import torch
+        # Show dependency versions using importlib.metadata
+        # This is more reliable than checking __version__ attributes
+        deps = [
+            ("torch", "torch"),
+            ("llama-cpp-python", "llama-cpp-python"),
+            ("nvidia-ml-py", "nvidia-ml-py"),
+            ("huggingface-hub", "huggingface-hub"),
+        ]
 
-            click.echo(f"  torch: {torch.__version__}")
-        except (ImportError, AttributeError):
-            click.echo("  torch: not installed")
-
-        try:
-            import llama_cpp
-
-            click.echo(f"  llama-cpp-python: {llama_cpp.__version__}")
-        except (ImportError, AttributeError):
-            click.echo("  llama-cpp-python: not installed")
-
-        try:
-            import pynvml
-
-            click.echo(f"  nvidia-ml-py: {pynvml.__version__}")
-        except (ImportError, AttributeError):
-            click.echo("  nvidia-ml-py: not installed")
-
-        try:
-            import huggingface_hub
-
-            click.echo(f"  huggingface-hub: {huggingface_hub.__version__}")
-        except (ImportError, AttributeError):
-            click.echo("  huggingface-hub: not installed")
+        for display_name, package_name in deps:
+            try:
+                pkg_version = get_version(package_name)
+                click.echo(f"  {display_name}: {pkg_version}")
+            except PackageNotFoundError:
+                click.echo(f"  {display_name}: not installed")
 
         ctx.exit(0)
 

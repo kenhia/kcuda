@@ -275,3 +275,38 @@ class TestModelLifecycleIntegration:
 
         output_clean = re.sub(r"\x1b\[[0-9;]*m", "", result.output)
         assert "8192" in output_clean or "8,192" in output_clean  # Context length
+
+    @patch("kcuda_validate.services.model_loader.Llama")
+    @patch("kcuda_validate.services.model_loader.torch.cuda")
+    def test_model_cleanup_on_signal(self, mock_cuda, mock_llama_class):
+        """Test that GPU memory cleanup occurs when signal handlers are triggered."""
+        from unittest.mock import MagicMock
+
+        # Mock CUDA and model
+        mock_cuda.is_available.return_value = True
+        mock_cuda.empty_cache = MagicMock()
+        mock_llama_instance = MagicMock()
+        mock_llama_class.return_value = mock_llama_instance
+
+        # Import the cleanup handler
+        from kcuda_validate.__main__ import _cleanup_on_exit
+
+        # Simulate model loading by setting active loader
+        from kcuda_validate.services.model_loader import ModelLoader
+
+        loader = ModelLoader()
+        loader._loaded_model = mock_llama_instance
+
+        # Manually set the global active loader
+        import kcuda_validate.__main__ as main_module
+
+        main_module._active_loader = loader
+
+        # Call cleanup handler (simulating signal)
+        _cleanup_on_exit()
+
+        # Verify cleanup was called on the loader
+        # The loader's _loaded_model should be None after cleanup
+        assert loader._loaded_model is None
+        # GPU cache should have been cleared
+        mock_cuda.empty_cache.assert_called_once()

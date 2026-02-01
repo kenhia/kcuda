@@ -107,9 +107,10 @@ A developer needs to run a simple inference test to confirm the model can genera
 - NVIDIA GPU drivers are installed on the Windows host system
 - User has sufficient disk space for model downloads (~4-8GB for Mistral 7B GGUF)
 - Internet connection is available for initial model download from Hugging Face
-- Target model is the quantized GGUF format (Q4_K_M or similar) that balances quality and memory usage
+- Target model is the quantized GGUF format (specifically MistralRP-Noromaid-NSFW-7B-Q4_0.gguf as default, with Q5_K_M and other quantizations available)
 - User has basic command-line familiarity for running Python scripts or CLI tools
 - The system is intended for validation/testing purposes, not production deployment
+- Optional: User may set HF_TOKEN environment variable for faster downloads and higher rate limits from Hugging Face
 
 ## Scope *(optional)*
 
@@ -121,6 +122,7 @@ A developer needs to run a simple inference test to confirm the model can genera
 - GPU memory monitoring and reporting
 - Simple CLI interface for validation steps
 - Performance metric collection (inference speed)
+- File-based logging with rotation for debugging and CUDA diagnostics
 
 ### Out of Scope
 
@@ -129,7 +131,7 @@ A developer needs to run a simple inference test to confirm the model can genera
 - Persistent model caching or management system
 - Web UI or API server for inference
 - Model fine-tuning or training capabilities
-- Production-grade error handling and logging
+- Advanced logging infrastructure (centralized logging, alerting, log aggregation, structured logging pipelines)
 - Distributed inference or multi-GPU support
 - Model quantization or conversion tools
 - Chat history or conversation management

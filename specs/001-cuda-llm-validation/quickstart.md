@@ -42,7 +42,19 @@ cd kcuda
 uv sync
 ```
 
-### 4. Verify Installation
+### 4. Optional: Set Hugging Face Token
+
+For faster downloads and higher rate limits, create a Hugging Face token:
+
+1. Visit https://huggingface.co/settings/tokens
+2. Create a new token with "Read" access
+3. Export it in your shell:
+
+```bash
+export HF_TOKEN=your_token_here
+```
+
+### 5. Verify Installation
 
 ```bash
 uv run kcuda-validate --version
@@ -183,10 +195,12 @@ Use this to verify CUDA availability without downloading models.
 
 ### Load Specific Model
 
+Load a different quantization (e.g., Q5_K_M for better quality with more VRAM):
+
 ```bash
 uv run kcuda-validate load \
   --repo-id "Ttimofeyka/MistralRP-Noromaid-NSFW-Mistral-7B-GGUF" \
-  --filename "mistralrp-noromaid-nsfw-mistral-7b.Q4_K_M.gguf"
+  --filename "MistralRP-Noromaid-NSFW-7B-Q5_K_M.gguf"
 ```
 
 ### Run Custom Inference

@@ -368,12 +368,13 @@ class TestInferCommandContract:
         assert result.exit_code == 0
         assert "--temperature" in result.output
 
-    def test_infer_command_has_load_model_option(self):
-        """Test infer command has --load-model option."""
+    def test_infer_command_has_model_options(self):
+        """Test infer command has --repo-id and --filename options for auto-loading."""
         result = self.runner.invoke(cli, ["infer", "--help"])
 
         assert result.exit_code == 0
-        assert "--load-model" in result.output
+        assert "--repo-id" in result.output
+        assert "--filename" in result.output
 
     @patch("kcuda_validate.cli.infer.Inferencer")
     def test_infer_command_displays_performance_metrics(self, mock_inferencer_class):

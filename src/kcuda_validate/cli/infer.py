@@ -26,31 +26,28 @@ logger = setup_logger(__name__)
     help="Sampling temperature [default: 0.7]",
 )
 @click.option(
-    "--load-model",
-    is_flag=True,
-    help="Automatically load default model if not loaded",
-)
-@click.option(
     "--repo-id",
     type=str,
     default=None,
-    help="Model repo (if --load-model used)",
+    help="Model repository to auto-load [default: Ttimofeyka/MistralRP-Noromaid-NSFW-Mistral-7B-GGUF]",
 )
 @click.option(
     "--filename",
     type=str,
     default=None,
-    help="Model file (if --load-model used)",
+    help="Model filename to auto-load [default: MistralRP-Noromaid-NSFW-7B-Q4_0.gguf]",
 )
 def infer(
     prompt: str,
     max_tokens: int,
     temperature: float,
-    load_model: bool,
     repo_id: str | None,
     filename: str | None,
 ) -> None:
     """Execute text generation with loaded model to validate GPU acceleration.
+
+    If no model is currently loaded, one will be automatically downloaded and loaded.
+    Use --repo-id and --filename to specify a different model than the default.
 
     \b
     PROMPT: Text prompt for generation [default: "Hello, how are you?"]
@@ -59,7 +56,7 @@ def infer(
     Examples:
       kcuda-validate infer "Tell me a story"
       kcuda-validate infer --max-tokens 100 --temperature 0.8 "Explain quantum physics"
-      kcuda-validate infer --load-model "What is AI?"
+      kcuda-validate infer --repo-id TheBloke/Mistral-7B-GGUF --filename model.gguf "What is AI?"
     """
     try:
         # Validate prompt
@@ -77,11 +74,44 @@ def infer(
 
         model_to_use = _loaded_model
 
-        if model_to_use is None and load_model:
-            click.echo("→ Loading model...")
-            # TODO: Implement auto-load functionality
-            click.echo("✗ Auto-load not yet implemented", err=True)
-            raise SystemExit(1)
+        if model_to_use is None:
+            click.echo("→ No model loaded, loading model automatically...")
+
+            # Set defaults if not provided
+            if repo_id is None:
+                repo_id = "Ttimofeyka/MistralRP-Noromaid-NSFW-Mistral-7B-GGUF"
+            if filename is None:
+                filename = "MistralRP-Noromaid-NSFW-7B-Q4_0.gguf"
+
+            # Load model using ModelLoader
+            from kcuda_validate.services.model_loader import ModelLoader, ModelLoadError
+
+            try:
+                loader = ModelLoader()
+
+                # Download model if needed
+                model_path = loader.download_model(repo_id=repo_id, filename=filename)
+                click.echo(f"✓ Model downloaded: {model_path}")
+
+                # Load model into GPU memory
+                model_to_use = loader.load_model(
+                    local_path=model_path,
+                    repo_id=repo_id,
+                    filename=filename,
+                    use_gpu=True,
+                )
+                click.echo(f"✓ Model loaded: {model_to_use.filename}")
+
+            except ModelLoadError as e:
+                click.echo(f"✗ Failed to load model: {e}", err=True)
+                click.echo("")
+                click.echo("Inference test: FAILED")
+                raise SystemExit(2) from e
+            except Exception as e:
+                click.echo(f"✗ Unexpected error loading model: {e}", err=True)
+                click.echo("")
+                click.echo("Inference test: FAILED")
+                raise SystemExit(2) from e
 
         # Display model status
         if model_to_use is not None:
@@ -100,13 +130,12 @@ def infer(
             inferencer = Inferencer(model=model_instance)
         except TypeError as e:
             # Model is None - Inferencer requires non-None model
+            # This should not happen as we auto-load, but handle it anyway
             if "Model cannot be None" in str(e) or "None" in str(e):
                 click.echo("✗ No model loaded", err=True)
                 click.echo("")
-                click.echo("Error: Must load model before running inference.")
-                click.echo("Run: kcuda-validate load")
-                click.echo("")
-                click.echo('Or use: kcuda-validate infer --load-model "Your prompt"')
+                click.echo("Error: Failed to load model for inference.")
+                click.echo("Try explicitly loading with: kcuda-validate load")
                 click.echo("")
                 click.echo("Inference test: FAILED")
                 raise SystemExit(1) from None

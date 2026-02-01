@@ -105,7 +105,8 @@ def load(
             local_path = Path(downloaded_path)
 
         except ModelLoadError as e:
-            console.print(format_error("Download Failed", str(e)))
+            # Print to stderr to ensure ANSI codes are visible
+            console.print(format_error("Download Failed", str(e)), markup=False)
             logger.error(f"Download failed: {e}")
             sys.exit(1)
     else:
@@ -142,7 +143,8 @@ def load(
         sys.exit(0)
 
     except ModelLoadError as e:
-        console.print(format_error("Load Failed", str(e)))
+        # Print to stderr to ensure ANSI codes are visible
+        console.print(format_error("Load Failed", str(e)), markup=False)
         logger.error(f"Load failed: {e}")
 
         # Determine exit code based on error type
@@ -158,6 +160,7 @@ def load(
             sys.exit(2)
 
     except Exception as e:
-        console.print(format_error("Error", str(e)))
+        # Print to stderr to ensure ANSI codes are visible
+        console.print(format_error("Error", str(e)), markup=False)
         logger.error(f"Unexpected error: {e}")
         sys.exit(3)
