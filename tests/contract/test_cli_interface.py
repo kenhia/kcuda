@@ -288,10 +288,26 @@ class TestInferCommandContract:
         """Setup test runner."""
         self.runner = CliRunner()
 
+    @patch("kcuda_validate.cli.infer.ModelLoader")
     @patch("kcuda_validate.cli.infer.Inferencer")
-    def test_infer_command_success_output_format(self, mock_inferencer_class):
+    def test_infer_command_success_output_format(self, mock_inferencer_class, mock_loader_class):
         """Test infer command success output matches contract format."""
         from kcuda_validate.models.inference_result import InferenceResult
+        from kcuda_validate.models.llm_model import LLMModel
+
+        # Mock model loader to prevent auto-load
+        mock_loader = mock_loader_class.return_value
+        mock_model = MagicMock()
+        mock_model.model_path = "/path/to/model.gguf"
+        mock_loader.load_model.return_value = LLMModel(
+            model_path="/path/to/model.gguf",
+            repo_id="test/repo",
+            filename="model.gguf",
+            file_size_mb=4000,
+            context_length=8192,
+            loaded=True,
+            quantization="Q4_0",
+        )
 
         # Mock successful inference
         mock_inferencer = mock_inferencer_class.return_value
@@ -318,11 +334,13 @@ class TestInferCommandContract:
         assert "tokens" in output_lower
         assert "response" in output_lower or "hello" in output_lower
 
+    @patch("kcuda_validate.cli.infer.ModelLoader")
     @patch("kcuda_validate.cli.infer.Inferencer")
-    def test_infer_command_no_model_loaded_exit_code(self, mock_inferencer_class):
+    def test_infer_command_no_model_loaded_exit_code(self, mock_inferencer_class, mock_loader_class):
         """Test infer command exit code 1 when no model loaded."""
-        # Mock no model loaded scenario
-        mock_inferencer_class.side_effect = RuntimeError("No model loaded")
+        # Mock model loader failure
+        mock_loader = mock_loader_class.return_value
+        mock_loader.load_model.side_effect = RuntimeError("No model loaded")
 
         result = self.runner.invoke(cli, ["infer", "Test prompt"])
 
@@ -376,10 +394,24 @@ class TestInferCommandContract:
         assert "--repo-id" in result.output
         assert "--filename" in result.output
 
+    @patch("kcuda_validate.cli.infer.ModelLoader")
     @patch("kcuda_validate.cli.infer.Inferencer")
-    def test_infer_command_displays_performance_metrics(self, mock_inferencer_class):
+    def test_infer_command_displays_performance_metrics(self, mock_inferencer_class, mock_loader_class):
         """Test infer command displays performance metrics."""
         from kcuda_validate.models.inference_result import InferenceResult
+        from kcuda_validate.models.llm_model import LLMModel
+
+        # Mock model loader
+        mock_loader = mock_loader_class.return_value
+        mock_loader.load_model.return_value = LLMModel(
+            model_path="/path/to/model.gguf",
+            repo_id="test/repo",
+            filename="model.gguf",
+            file_size_mb=4000,
+            context_length=8192,
+            loaded=True,
+            quantization="Q4_0",
+        )
 
         mock_inferencer = mock_inferencer_class.return_value
         mock_inferencer.generate.return_value = InferenceResult.from_generation(
