@@ -62,9 +62,6 @@ class TestModelLifecycleIntegration:
             # Execute through CLI
             result = self.runner.invoke(cli, self.default_load_args)
 
-            # Execute through CLI
-            result = self.runner.invoke(cli, self.default_load_args)
-
             # Debug output
             if result.exit_code != 0:
                 print(f"\nExit code: {result.exit_code}")
@@ -288,22 +285,18 @@ class TestModelLifecycleIntegration:
         mock_llama_instance = MagicMock()
         mock_llama_class.return_value = mock_llama_instance
 
-        # Import the cleanup handler
-        from kcuda_validate.__main__ import _cleanup_on_exit
-
-        # Simulate model loading by setting active loader
+        # Import the cleanup handler and main module
+        import kcuda_validate.__main__ as main_module
         from kcuda_validate.services.model_loader import ModelLoader
 
         loader = ModelLoader()
         loader._loaded_model = mock_llama_instance
 
         # Manually set the global active loader
-        import kcuda_validate.__main__ as main_module
-
         main_module._active_loader = loader
 
         # Call cleanup handler (simulating signal)
-        _cleanup_on_exit()
+        main_module._cleanup_on_exit()
 
         # Verify cleanup was called on the loader
         # The loader's _loaded_model should be None after cleanup

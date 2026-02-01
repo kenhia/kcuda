@@ -151,12 +151,3 @@ class GPUDetector:
         except Exception as e:
             # Catch all other errors during detection
             raise GPUDetectionError(f"Unexpected error during GPU detection: {e}") from e
-
-    def __del__(self):
-        """Cleanup NVML on destruction."""
-        if self._nvml_initialized:
-            try:
-                pynvml.nvmlShutdown()
-                logger.debug("NVML shutdown successfully")
-            except Exception:
-                pass  # Ignore errors during cleanup

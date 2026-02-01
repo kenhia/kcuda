@@ -27,6 +27,7 @@ def _get_log_file_message() -> str:
         if log_path:
             return f"\nFor detailed diagnostics, see: {log_path}"
     except Exception:
+        # Log file path retrieval is optional; if it fails, continue without it
         pass
     return ""
 

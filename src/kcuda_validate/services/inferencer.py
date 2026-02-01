@@ -1,5 +1,6 @@
 """Inference service for generating text from loaded models."""
 
+import contextlib
 import time
 from typing import Any
 
@@ -101,12 +102,9 @@ class Inferencer:
             vram_peak_mb: int | None = None
 
             if self._collect_metrics:
-                try:
+                with contextlib.suppress(pynvml.NVMLError):
+                    # GPU monitoring not critical, continue without it if it fails
                     pynvml.nvmlInit()
-                    handle = pynvml.nvmlDeviceGetHandleByIndex(self._device_id)
-                except pynvml.NVMLError:
-                    # GPU monitoring not critical, continue without it
-                    pass
 
             # Start timing
             start_time = time.time()
