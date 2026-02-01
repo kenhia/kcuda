@@ -27,7 +27,15 @@ jobs:
           python-version: ${{ matrix.python-version }}
       
       - name: Install dependencies
-        run: uv sync --all-extras
+        run: |
+          # Install CPU-only torch (GitHub Actions runners don't have CUDA GPUs)
+          uv pip install torch --index-url https://download.pytorch.org/whl/cpu
+          # Install remaining dependencies except llama-cpp-python (requires CUDA build)
+          uv pip install nvidia-ml-py huggingface-hub click rich
+          # Install test dependencies
+          uv pip install pytest pytest-cov pytest-mock ruff
+          # Install package in editable mode without dependencies (already installed above)
+          uv pip install -e . --no-deps
       
       - name: Lint with ruff
         run: |
@@ -35,7 +43,9 @@ jobs:
           uv run ruff format --check .
       
       - name: Run tests
-        run: uv run pytest tests/ -v --cov --cov-report=xml
+        run: |
+          # Run all unit and integration tests (they use mocks, don't need actual GPU/llama)
+          uv run pytest tests/ -v --cov=src/kcuda_validate --cov-report=xml -k "not test_detection_on_real_hardware"
       
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
