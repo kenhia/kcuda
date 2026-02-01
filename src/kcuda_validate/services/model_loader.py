@@ -7,12 +7,17 @@ using llama-cpp-python.
 import logging
 import re
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import torch
 from huggingface_hub import hf_hub_download
-from llama_cpp import Llama
 
 from kcuda_validate.models.llm_model import LLMModel
+
+# Lazy import to avoid requiring llama-cpp-python at import time
+# (needed for CI environments without CUDA build tools)
+if TYPE_CHECKING:
+    from llama_cpp import Llama
 
 logger = logging.getLogger(__name__)
 
@@ -163,6 +168,9 @@ class ModelLoader:
 
         # Load model with llama-cpp-python
         try:
+            # Import at runtime to avoid requiring llama-cpp-python at module import time
+            from llama_cpp import Llama
+
             n_gpu_layers = -1 if use_gpu else 0  # -1 = all layers on GPU
             self._loaded_model = Llama(
                 model_path=local_path,

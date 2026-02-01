@@ -58,7 +58,7 @@ class TestModelLoader:
 
     @patch("kcuda_validate.services.model_loader.torch.cuda")
     @patch("kcuda_validate.services.model_loader.Path.stat")
-    @patch("kcuda_validate.services.model_loader.Llama")
+    @patch("llama_cpp.Llama")
     def test_load_model_success(self, mock_llama_class, mock_stat, mock_cuda):
         """Test successful model loading into GPU memory."""
         # Mock CUDA availability
@@ -103,7 +103,7 @@ class TestModelLoader:
     @patch("kcuda_validate.services.model_loader.torch.cuda")
     @patch("kcuda_validate.services.model_loader.Path.stat")
     @patch("kcuda_validate.services.model_loader.Path.exists")
-    @patch("kcuda_validate.services.model_loader.Llama")
+    @patch("llama_cpp.Llama")
     def test_load_model_insufficient_vram(
         self, mock_llama_class, mock_exists, mock_stat, mock_cuda
     ):
@@ -153,7 +153,7 @@ class TestModelLoader:
             )
 
     @patch("kcuda_validate.services.model_loader.Path.stat")
-    @patch("kcuda_validate.services.model_loader.Llama")
+    @patch("llama_cpp.Llama")
     def test_load_model_cpu_mode(self, mock_llama_class, mock_stat):
         """Test model loading in CPU mode (no GPU)."""
         mock_stat_result = MagicMock()

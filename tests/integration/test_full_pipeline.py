@@ -20,7 +20,7 @@ class TestFullPipeline:
         self.runner = CliRunner()
 
     @patch("kcuda_validate.cli.infer.Inferencer")
-    @patch("kcuda_validate.services.model_loader.Llama")
+    @patch("llama_cpp.Llama")
     @patch("kcuda_validate.services.model_loader.Path.exists")
     @patch("kcuda_validate.services.model_loader.hf_hub_download")
     @patch("kcuda_validate.services.gpu_detector.torch.cuda")

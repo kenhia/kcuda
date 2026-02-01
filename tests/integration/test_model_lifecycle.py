@@ -29,7 +29,7 @@ class TestModelLifecycleIntegration:
         ]
 
     @patch("kcuda_validate.services.model_loader.hf_hub_download")
-    @patch("kcuda_validate.services.model_loader.Llama")
+    @patch("llama_cpp.Llama")
     @patch("kcuda_validate.services.model_loader.torch.cuda")
     def test_full_model_load_pipeline_success(self, mock_cuda, mock_llama_class, mock_download):
         """Test complete download → load flow through CLI."""
@@ -109,7 +109,7 @@ class TestModelLifecycleIntegration:
         assert "vram" in result.output.lower() or "memory" in result.output.lower()
 
     @patch("kcuda_validate.services.model_loader.hf_hub_download")
-    @patch("kcuda_validate.services.model_loader.Llama")
+    @patch("llama_cpp.Llama")
     @patch("kcuda_validate.services.model_loader.torch.cuda")
     def test_custom_repo_and_filename(self, mock_cuda, mock_llama_class, mock_download):
         """Test loading with custom repo-id and filename options."""
@@ -153,7 +153,7 @@ class TestModelLifecycleIntegration:
     @patch("kcuda_validate.services.model_loader.hf_hub_download")
     @patch("kcuda_validate.services.model_loader.Path.stat")
     @patch("kcuda_validate.services.model_loader.Path.exists")
-    @patch("kcuda_validate.services.model_loader.Llama")
+    @patch("llama_cpp.Llama")
     def test_skip_download_option(self, mock_llama_class, mock_exists, mock_stat, mock_download):
         """Test --skip-download option skips download step."""
         # Mock file already exists locally
@@ -182,7 +182,7 @@ class TestModelLifecycleIntegration:
         mock_download.assert_not_called()
 
     @patch("kcuda_validate.services.model_loader.hf_hub_download")
-    @patch("kcuda_validate.services.model_loader.Llama")
+    @patch("llama_cpp.Llama")
     def test_no_gpu_option_cpu_mode(self, mock_llama_class, mock_download):
         """Test --no-gpu option loads model in CPU mode."""
         mock_path = "/path/to/model.gguf"
@@ -220,7 +220,7 @@ class TestModelLifecycleIntegration:
 
     @patch("kcuda_validate.services.model_loader.hf_hub_download")
     @patch("kcuda_validate.services.model_loader.Path.exists")
-    @patch("kcuda_validate.services.model_loader.Llama")
+    @patch("llama_cpp.Llama")
     def test_invalid_gguf_file_handling(self, mock_llama_class, mock_exists, mock_download):
         """Test handling of invalid/corrupt GGUF files."""
         mock_path = "/path/to/corrupt.gguf"
@@ -237,7 +237,7 @@ class TestModelLifecycleIntegration:
         assert "invalid" in result.output.lower() or "corrupt" in result.output.lower()
 
     @patch("kcuda_validate.services.model_loader.hf_hub_download")
-    @patch("kcuda_validate.services.model_loader.Llama")
+    @patch("llama_cpp.Llama")
     @patch("kcuda_validate.services.model_loader.torch.cuda")
     def test_model_metadata_displayed(self, mock_cuda, mock_llama_class, mock_download):
         """Test that model metadata is displayed in output."""
@@ -273,7 +273,7 @@ class TestModelLifecycleIntegration:
         output_clean = re.sub(r"\x1b\[[0-9;]*m", "", result.output)
         assert "8192" in output_clean or "8,192" in output_clean  # Context length
 
-    @patch("kcuda_validate.services.model_loader.Llama")
+    @patch("llama_cpp.Llama")
     @patch("kcuda_validate.services.model_loader.torch.cuda")
     def test_model_cleanup_on_signal(self, mock_cuda, mock_llama_class):
         """Test that GPU memory cleanup occurs when signal handlers are triggered."""
